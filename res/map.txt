@@ -1,0 +1,1 @@
+			FindWoodenShieldRoom1						FindSmallKeyRoom1						RockPileRoom1		GiantPlantRoom1	FindArtofCombatRoom1	EmptyCavePath1	FindGoldRoom1	StartingRoom	EmptyCavePath3	FindRustyBootsRoom1	FindRepairVendorRoom1	HallOfFameCooridor1		FindKnifeRoom1				FindRustyHelmet1		MerchantRoom1				FindGiantSnakeRoom1		EmptyCavePath2	LeaveCaveRoom		
