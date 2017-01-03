@@ -81,14 +81,23 @@ class MapTile:
 			
 		moves = []
 		if not self.isBlocked :		
-			if player.world.__dict__.get( (self.x + 1, self.y) ):
+			if player.world.__dict__.get('(%s, %s)' % (self.x + 1, self.y) ):
 				moves.append(actions.MoveEast())
-			if player.world.__dict__.get((self.x - 1, self.y)):
+			if player.world.__dict__.get('(%s, %s)' % (self.x - 1, self.y)):
 				moves.append(actions.MoveWest())
-			if player.world.__dict__.get((self.x, self.y - 1)):
+			if player.world.__dict__.get('(%s, %s)' % (self.x, self.y - 1)):
 				moves.append(actions.MoveNorth())
-			if player.world.__dict__.get((self.x, self.y + 1)):
+			if player.world.__dict__.get('(%s, %s)' % (self.x, self.y + 1)):
 				moves.append(actions.MoveSouth())
+
+# 			if player.world.__dict__.get( (self.x + 1, self.y) ):
+# 				moves.append(actions.MoveEast())
+# 			if player.world.__dict__.get((self.x - 1, self.y)):
+# 				moves.append(actions.MoveWest())
+# 			if player.world.__dict__.get((self.x, self.y - 1)):
+# 				moves.append(actions.MoveNorth())
+# 			if player.world.__dict__.get((self.x, self.y + 1)):
+# 				moves.append(actions.MoveSouth())
 
 		
 		
@@ -144,6 +153,7 @@ class MapTile:
 				,actions.Search()
 				,actions.Skills()
 				,actions.Save()
+				,actions.Quit()
 				,actions.Map()
 				]
 				
@@ -276,6 +286,7 @@ class EnemyRoom(MapTile):
 				,actions.CheckHp()
 				,actions.CheckStats()
 				,actions.Skills()
+				,actions.Quit()
 				]
 		elif not self.enemy.is_alive() and not self.enemy.been_looted():
 			# create some objects on the enemy to loot if they don't already exist

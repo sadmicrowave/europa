@@ -151,5 +151,10 @@ class Save(HiddenAction):
 	def __init__(self):
 		super().__init__(method=Player.save, name='Save Game', hotkey=['sa','save'])
 
+class Quit(HiddenAction):
+	def __init__(self):
+		super().__init__(method=Player.quit, name='Quit Game', hotkey=['q','quit'])
+
+
 
 

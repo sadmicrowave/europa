@@ -95,6 +95,7 @@ class Lootable(Item):
 		self.orig_hp = hp
 		super().__init__(name, description, cost)
 
+
 class Chest(Item):
 	def __init__(self, name, classtype, description, cost, hp, interaction_item=[]):
 		self.moved = False
@@ -157,7 +158,9 @@ class Movable():
 		#return "{} | Value:{}\n{}{}{}".format(self.name, self.value, BgColors.WARNING, self.description, BgColors.ENDC)
 		return "{} | {}{}{}".format(self.name, BgColors.WARNING, self.description, BgColors.ENDC)
 
-
+	def move(self):
+		pass
+	
 
 
 # class Torch(Usable):

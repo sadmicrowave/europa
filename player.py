@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-import random, re, inspect, math, pickle, textwrap, jsonpickle
+import sys, random, re, inspect, math, pickle, textwrap, jsonpickle
 
 from res.bgcolors import BgColors
 from modules import actions
@@ -664,7 +664,7 @@ Find a larger backpack or drop items from your inventory.{}"""
 					if isinstance(i, armor.Armor):
 					#if item.baseclass == 'Armor':
 						# ensure the same type of armor isn't already equipped (i.e. two boot types, etc.)
-						if i.__class__.__bases__[0] == item.__class__.__bases__[0] and i.is_equipped():
+						if i.__class__ == item.__class__ and i.is_equipped() :
 						#if i.classtype == item.classtype and i.is_equipped():
 							i.equip = False
 				# set this item equipped status to true
@@ -755,17 +755,7 @@ Find a larger backpack or drop items from your inventory.{}"""
 			else :
 				print("{}You can't repair the {} because it is not armor or a weapon.{}".format(BgColors.FAIL, item.name, BgColors.ENDC))
 				
-				
-
-	def exit(self):
-		"""Exit the game rooms to win."""
-		# set victory variable within the player object to true, for the next while iteration within Game.py to detect victory
-		self.victory = True
-		# print exit text
-		print( textwrap.fill("Being lost in this cavern was terrible. but as you emerge, you find yourself on a mountain ridge, overlooking a lively city in the distance.  It's over.  You are safe.\n\n Thank you for playing.\n\n",70))
-	
-	
-	
+					
 	def map(self):
 		"""Show the map of where the player has been."""
 		# set grid to view.  Grid will present visited tiles/rooms within a x,y range of current location
@@ -938,65 +928,33 @@ won't find better deals anywhere else in the realm!
 		
 		
 		
+#################################################################################################################################
+# SETUP WAYS TO LEAVE THE GAME
 		
-		
-		
-		
-		
-		
+	def exit(self):
+		"""Exit the game rooms to win."""
+		# set victory variable within the player object to true, for the next while iteration within Game.py to detect victory
+		self.victory = True
+		# print exit text
+		print( textwrap.fill("Being lost in this cavern was terrible. but as you emerge, you find yourself on a mountain ridge, overlooking a lively city in the distance.  It's over.  You are safe.\n\n Thank you for playing.\n\n",70))
+				
 	
 	def save(self):
 		"""Save the current state of the game."""
 		try :
 			
-			
-# 			class RoomHandler(jsonpickle.handlers.BaseHandler):
-# 				def flatten(self,obj,data):
-# 					print(obj, data)
-# 					return obj
-			
-			#jsonpickle.handlers.registry.register(self.world.StartingRoom, RoomHandler)
-			
-			#print( self.room, self.room.__class__, type(self.room) )
-			
-#			with open('gsave.pkl', 'wb') as output:
-#			dill.dump_session('gsave.pkl')
-			
-			#with open('gsave.pkl', 'w') as output:
-				#output.write( jsonpickle.encode(self) )
-				
-			
-# 				for item in self.world._objects :
-# 					pickle.dump(item, output, pickle.DEFAULT_PROTOCOL)
-# 				
-# 				#for k,v in self.world.items() :
-# 				pickle.dump(self.world, output, pickle.DEFAULT_PROTOCOL)
-# 				
-# 				pickle.dump(self.location_x, output, pickle.DEFAULT_PROTOCOL)
-# 				pickle.dump(self.location_y, output, pickle.DEFAULT_PROTOCOL)
-# 			
-# 				
-# 				pickle.dump(self.skills, output, pickle.DEFAULT_PROTOCOL)
-# 				pickle.dump(self.purse, output, pickle.DEFAULT_PROTOCOL)
-				
-				#for item in self.inventory :
-				#	pickle.dump(item, output, pickle.DEFAULT_PROTOCOL)
-				
-				#pickle.dump(self.backpack, output, pickle.DEFAULT_PROTOCOL)
+			with open('gsave.pkl', 'w') as output:
+				output.write( jsonpickle.encode(self) )
 
-
-					
-			
-			
-				# In order to use pickle to serialize the player and world class instances
-				# the entire world/tile/object model must be redesigned as pickle does not support
-				# serializing dict attribute objects assigned as an attribute of a class.  The internal
-				# objects must be instantiated as part of the parent class.
-			
 			print("{}Game state successfully saved.{}".format(BgColors.OKGREEN, BgColors.ENDC))
 		except Exception:
 			raise
 			print("{}There was an error saving the game.  Sorry.{}".format(BgColors.FAIL, BgColors.ENDC))
 	
+	
+	def quit(self):
+		"""Quick the current game, and save."""
+		self.save()
+		sys.exit()
 
 

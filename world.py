@@ -52,7 +52,8 @@ class World:
 					tile.x = x
 					tile.y = y
 					#self._world[(x, y)] = tile
-					self.__dict__[(x,y)] = tile
+					#self.__dict__[(x,y)] = tile
+					self.__dict__['(%s, %s)' % (x,y)] = tile
 					
 							
 	def construct_room(self):
@@ -69,15 +70,15 @@ class World:
 				# create a name for the class object name
 				room_name = row[0].value.replace(' ','')
 				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, d, o, i, b):
-					# initialize super of class type
-					#print(self.__class__, self)
-					#super(tiles.MapTile.__class__, tiles.MapTile).__init__(n, d, o, i, b)
-					super(self.__class__, self).__init__(n, d, o, i, b)
+				#def __constructor__(self, n, d, o, i, b):
+				#	# initialize super of class type
+				#	#print(self.__class__, self)
+				#	#super(tiles.MapTile.__class__, tiles.MapTile).__init__(n, d, o, i, b)
+				#	super(self.__class__, self).__init__(n, d, o, i, b)
 				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				#room = type(room_name, (eval("tiles.{}".format(row[1].value)),), {'__init__':__constructor__})
-				room = type(row[1].value, (eval("tiles.{}".format(row[1].value)),), {'__init__':__constructor__})
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				##room = type(room_name, (eval("tiles.{}".format(row[1].value)),), {'__init__':__constructor__})
+				#room = type(row[1].value, (eval("tiles.{}".format(row[1].value)),), {'__init__':__constructor__})
 				
 				# get the items located in the room by splitting the "Items" column on comma
 				room_items = []
@@ -111,7 +112,8 @@ class World:
 				blocked_state = True if str(isBlocked).upper() == 'TRUE' else False
 								
 				# add new object to the global _objects object to be used throughout the world
-				_rooms[ room_name ] = room(room_name, textwrap.fill(row[2].value if row[2].value is not None else '',70).strip(), room_items, room_interaction_items, blocked_state)
+				#_rooms[ room_name ] = room(room_name, textwrap.fill(row[2].value if row[2].value is not None else '',70).strip(), room_items, room_interaction_items, blocked_state)
+				_rooms[ room_name ] = eval( "%s.%s(room_name, textwrap.fill(row[2].value if row[2].value is not None else '',70).strip(), room_items, room_interaction_items, blocked_state)" % ('tiles',row[1].value) )
 		
 		return _rooms
 							
@@ -128,44 +130,20 @@ class World:
 				# create a name for the class object name
 				item_name = row[0].value.replace(' ','')
 				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, c, h, l):
-					# initialize super of class type
-					#super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
-					#print(self.__class__, self)
-
-					
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
+				#def __constructor__(self, n, cl, d, c, h, l):
+				#	# initialize super of class type
+				#	#super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
+				#	#print(self.__class__, self)
+				#
+				#	
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)' % (name, row[1].value) )
 				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, cost=row[3].value, hp=row[4].value, level=row[5].value)
-
-
-# 	def load_armor(self,name='armor'):
-# 		"""Parse the world spreadsheet:Armor tab containing object data for armor items"""
-# 		#self.load_base(name)
-# 		wb = load_workbook( filename = self.world_file )
-# 		# select the specific worksheet to load data from
-# 		sheet = wb.get_sheet_by_name(name.capitalize())
-# 		# iterate over rows in the worksheet
-# 		for index,row in enumerate( sheet.iter_rows() ):
-# 			# skip the header row in the excel sheet
-# 			if index > 0: 
-# 				# create a name for the class object name
-# 				item_name = row[0].value.replace(' ','')
-# 				# define an __init__ constructor method to be used when dynamically creating the object class
-# 				def __constructor__(self, n, cl, d, c, bl, h, l):
-# 					# initialize super of class type
-# 					#super(eval('%s.%s' % ('armor',cl)), self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
-# 					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
-# 				
-# 				# create the object class dynamically, utilizing __constructor__ for __init__ method
-# 				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-# 				# add new object to the global _objects object to be used throughout the world
-# 				self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, baseclass=row[2].value, description=row[3].value, cost=row[4].value, block=row[5].value, hp=row[6].value, level=row[7].value)
-# 				#print( self._objects[ item_name ] )
-
+				
 	
 	def load_armor(self,name='armor'):
 		"""Parse the world spreadsheet:Armor tab containing object data for armor items"""
@@ -179,16 +157,17 @@ class World:
 			if index > 0: 
 				# create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, c, bl, h, l):
-					# initialize super of class type
-					#super(eval('%s.%s' % ('armor',cl)), self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, c, bl, h, l):
+				#	# initialize super of class type
+				#	#super(eval('%s.%s' % ('armor',cl)), self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, block=bl, hp=h, level=l)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)' % (name,row[1].value) )
 				#print( self._objects[ item_name ] )
 				
 
@@ -203,15 +182,17 @@ class World:
 			if index > 0: 
 				# create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, c, da, h, l):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, damage=da, hp=h, level=l)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, c, da, h, l):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, damage=da, hp=h, level=l)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)' % (name,row[1].value) )
+
 				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, cost=row[3].value, damage=row[4].value, hp=row[5].value, level=row[6].value)				
 					
 				
@@ -229,17 +210,18 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','')
 				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, h, da, dm, l):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, hp=h, damage=da, dead_message=dm, level=l)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				#def __constructor__(self, n, cl, d, h, da, dm, l):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, hp=h, damage=da, dead_message=dm, level=l)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)' % (name, row[1].value) )
 	
 	
 	def load_items(self,name='items'):
@@ -252,18 +234,18 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, c, h, l):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
-				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, cost=row[3].value, hp=row[4].value, level=row[5].value)
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, c, h, l):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, hp=h, level=l)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)' % (name, row[1].value) )
 				
 	
 	
@@ -277,12 +259,12 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, i):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, items=i)
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, i):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, items=i)
 				
 				# create the object class dynamically, utilizing __constructor__ for __init__ method
 				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
@@ -299,11 +281,11 @@ class World:
 							# override the original object each time we reference it in the future
 							usable_items.append( copy.deepcopy(self._objects[item]) )
 
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value)	
-				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, level=row[3].value)	
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value)	
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value)' % ('items', row[1].value) )
 	
 	
 	def load_merchants(self,name='merchants'):
@@ -316,15 +298,15 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, i):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, items=i)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				merchant = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, i):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, items=i)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#merchant = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				
 				# get the items located in the room by splitting the "Items" column on comma
 				merchant_items = []
@@ -341,7 +323,8 @@ class World:
 							merchant_items.append( copy.deepcopy(self._objects[item]))
 
 				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = merchant(row[0].value, row[1].value, row[2].value, merchant_items)
+				#self._objects[ item_name ] = merchant(row[0].value, row[1].value, row[2].value, merchant_items)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, merchant_items)' % (name,row[1].value) )
 
 	
 	def load_repair(self,name='repair'):
@@ -354,18 +337,19 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','')
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, l):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, level=l)
-				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				repair = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, l):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, level=l)
+				#
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#repair = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				
 				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = repair(row[0].value, row[1].value, row[2].value, row[3].value)
+				#self._objects[ item_name ] = repair(row[0].value, row[1].value, row[2].value, row[3].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value)' % (name, row[1].value) )
 
 	
 	def load_gold(self,name='gold'):
@@ -378,12 +362,12 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','') + str(row[3].value)
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, a, i):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, amt=a, interaction_item=i)
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, a, i):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, amt=a, interaction_item=i)
 				
 				
 				# create item object for interactionable item
@@ -400,11 +384,11 @@ class World:
 							# override the original object each time we reference it in the future
 							chest_interaction_items.append( copy.deepcopy(self._objects[item]) )
 				
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, chest_interaction_items)
-				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, baseclass=row[2].value, description=row[3].value, cost=row[4].value, interaction_item=chest_interaction_items)
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, chest_interaction_items)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, chest_interaction_items)' % (name, row[1].value) )
 	
 	
 	def load_notes(self,name='notes'):
@@ -417,18 +401,18 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				# create a name for the class object name
+				## create a name for the class object name
 				item_name = row[0].value.replace(' ','') #+ str(row[3].value)
-				# define an __init__ constructor method to be used when dynamically creating the object class
-				def __constructor__(self, n, cl, d, nar, s, v):
-					# initialize super of class type
-					super(self.__class__, self).__init__(name=n, classtype=cl, description=d, narrative=nar, skill=s, value=v)
+				## define an __init__ constructor method to be used when dynamically creating the object class
+				#def __constructor__(self, n, cl, d, nar, s, v):
+				#	# initialize super of class type
+				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, narrative=nar, skill=s, value=v)
 							
-				# create the object class dynamically, utilizing __constructor__ for __init__ method
-				item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
-				# add new object to the global _objects object to be used throughout the world
-				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
-				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, narrative=row[3].value, skill=row[4].value, value=row[5].value)
+				## create the object class dynamically, utilizing __constructor__ for __init__ method
+				#item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
+				## add new object to the global _objects object to be used throughout the world
+				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)' % ('items',row[1].value) )
 				
 	
 	
@@ -438,7 +422,8 @@ class World:
 	
 
 	def tile_exists(self, x, y):
-		return self.__dict__.get((x, y))
+		#return self.__dict__.get((x, y))
+		return self.__dict__.get('(%s, %s)' % (x, y) )
 
 
 if __name__ == '__main__':
