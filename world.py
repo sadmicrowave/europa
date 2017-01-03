@@ -212,7 +212,8 @@ class World:
 				item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				# add new object to the global _objects object to be used throughout the world
 				self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
-				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, cost=row[3].value, damage=row[4].value, hp=row[5].value, level=row[6].value)
+				#self._objects[ item_name ] = items.Item(name=row[0].value, classtype=row[1].value, description=row[2].value, cost=row[3].value, damage=row[4].value, hp=row[5].value, level=row[6].value)				
+					
 				
 	def load_potions(self,name='potions'):
 		"""Parse the world spreadsheet Potions tab containing object data for potion items"""

@@ -155,7 +155,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 			action_found = False
 			for action in available_actions:
 				#  If the human player provided a matching hotkey, then we execute the associated action using the do_action method.
-				if action_input.split(' ')[0] in action.hotkey:
+				if action_input.strip().split(' ')[0] in action.hotkey:
 					action_found = True
 					
 					#print( "Action:", action.__class__, isinstance(action, actions.PickUp), len([x for x in player.room.objects if not issubclass(x.__class__,items.Chest)]) )
@@ -175,7 +175,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 					break
 				
 			if not action_found:
-				print("{}You can't do that!{}".format(BgColors.FAIL, BgColors.ENDC))
+				print("{}You can't do that! Choose an action from the list below.\nExample: '[command] [#]' to interact with an item.{}".format(BgColors.FAIL, BgColors.ENDC))
 
 			
 	if not player.is_alive():

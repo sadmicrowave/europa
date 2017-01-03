@@ -77,7 +77,11 @@ class CheckHp(HiddenAction):
 
 class CheckStats(HiddenAction):
 	def __init__(self):
-		super().__init__(method=Player.check_stats, name='Check Stats', hotkey=['cs'])
+		super().__init__(method=Player.check_stats, name='Check stats', hotkey=['cs','stats'])
+
+class Map(HiddenAction):
+	def __init__(self):
+		super().__init__(method=Player.map, name='Show map', hotkey=['m','map'])
 
 class Equip(ItemAction):
 	def __init__(self):
@@ -90,7 +94,7 @@ class UnEquip(ItemAction):
 class Use(ItemAction):
 	def __init__(self):
 		super().__init__(method=Player.use, name='Use item [Name|Item Number]', hotkey=['u','use'])
-		
+
 class Search(HiddenAction):
 	def __init__(self):
 		super().__init__(method=Player.search, name='Search the room for items', hotkey=['se','search'])

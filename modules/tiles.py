@@ -27,6 +27,7 @@ class MapTile:
 		self.objects = item
 		self.isBlocked = isBlocked
 		self.interaction_item = interaction_item
+		self.visited = False
        
 	# We will never create a MapTile directly, instead we will create subclasses. 
 	# The code raise NotImplementedError() will warn us if we accidentally create a MapTile directly.
@@ -67,6 +68,9 @@ class MapTile:
 			i += 1
 			self.objects[index].index = i		
 
+	
+	def is_visited(self):
+		return self.visited == True
 	
 	# These methods provide some default behavior for a tile. The default actions that a player should have are: 
 	# move to any adjacent tile and view inventory. The method adjacent_moves determines which moves are possible in the map. 
@@ -140,6 +144,7 @@ class MapTile:
 				,actions.Search()
 				,actions.Skills()
 				,actions.Save()
+				,actions.Map()
 				]
 				
 		if self.name == 'LeaveCaveRoom' and not self.isBlocked:
@@ -372,11 +377,12 @@ class MerchantRoom(MapTile):
 
 	# Add the buy, sell, and list action options to any enemy room
 	def available_actions(self, player=None):        
-		available_actions = super().available_actions(player)
-		available_actions += [actions.Buy(merchant=self.merchant)
+		available_actions = [actions.Buy(merchant=self.merchant)
 							,actions.Sell(merchant=self.merchant)
 							,actions.List(merchant=self.merchant)
 							]
+		available_actions += super().available_actions(player)
+
 		return available_actions
 
 	def modify_player(self, player):
