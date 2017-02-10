@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-from player import Player
+from modules.player import Player
 
 # We now have behavior defined for certain actions. But within the game, 
 # we need some additional information. First, we need to bind keyboard keys 
@@ -27,8 +27,9 @@ class Action():
 			m += '|' if i > 0 else ''
 			m += k
 		m += ']'
-	
+
 		return "{:<15}:{}".format(m, self.name) # format with x number of spaces after text to standardize the string length
+
         
 #################################################################################################################################
 # DEFINE ACTIONS
@@ -67,6 +68,10 @@ class ViewInventory(Action):
     def __init__(self):
         super().__init__(method=Player.print_inventory, name='View inventory', hotkey=['i'])
 
+class ViewJournal(HiddenAction):
+    def __init__(self):
+        super().__init__(method=Player.print_journal, name='View journal', hotkey=['j'])
+
 class Help(Action):
     def __init__(self):
         super().__init__(method=Player.extended_help, name='Help menu', hotkey=['?'])
@@ -93,7 +98,11 @@ class UnEquip(ItemAction):
 	
 class Use(ItemAction):
 	def __init__(self):
-		super().__init__(method=Player.use, name='Use item [Name|Item Number]', hotkey=['u','use'])
+		super().__init__(method=Player.use, name='Use item [Name|Item #]', hotkey=['u','use'])
+
+class UseAction(Action):
+	def __init__(self):
+		super().__init__(method=Player.use, name='Use item [Name|Item #]', hotkey=['u','use'])
 
 class Search(HiddenAction):
 	def __init__(self):
@@ -118,7 +127,11 @@ class Drop(ItemAction):
 class Read(Action):
 	def __init__(self):
 		super().__init__(method=Player.read, name='Read item [Name|Item #]', hotkey=['r','read'])
-		
+
+class ReadHidden(HiddenAction):
+	def __init__(self):
+		super().__init__(method=Player.read, name='Read item [Name|Item #]', hotkey=['r','read'])
+
 class Buy(MerchantAction):
     def __init__(self, merchant):
 	    super().__init__(method=Player.buy, name='Buy from merchant [Name|Item #]', hotkey=['buy'], merchant=merchant)

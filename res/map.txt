@@ -1,1 +1,34 @@
-			FindWoodenShieldRoom1						FindSmallKeyRoom1			FindSwordRoom1			RockPileRoom1		GiantPlantRoom1	FindArtofCombatRoom1	EmptyCavePath1	FindGoldRoom1	StartingRoom	EmptyCavePath3	FindRustyBootsRoom1	FindRepairVendorRoom1	HallOfFameCooridor1		FindKnifeRoom1				FindRustyHelmet1		MerchantRoom1				FindGiantSnakeRoom1		EmptyCavePath2	LeaveCaveRoom		
+								
+								
+						L1MedicalOffice2		
+				L1MedicalOffice1	L1EncounterDyingDoctor	L1MedicalWingHallE1	L1MedicalWingHallE2	L1MedicalBay2
+					L1MedicalWingHallWS1		L1MedicalWingHallES1	
+L1MessHall2				L1StartingRoom	L1MedicalWingHallWS2		L1MedicalWingHallES2	
+L1MessHall1		L1BarracksNW3			L1MedicalWingHallWS3		L1MedicalWingHallES3	
+L1MainCorridorNW6	L1MainCorridorNW5	L1MainCorridorNW4	L1MainCorridorNW3	L1MainCorridorNW2	L1MainCorridorNW1	L1MainCorridorN1	L1MainCorridorNE1	
+		L1BarracksNW2		L1BarracksNW1				
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								
+								

@@ -5,13 +5,12 @@
 # the top left corner, x increases to the right, and y increases to the bottom.
 
 import random, inspect, math
-from res.bgcolors import BgColors
+from modules.bgcolors import BgColors
 from modules import actions
 from modules import items
-from modules import gold
 from modules import armor
 from modules import weapons
-import world
+from modules import world
 
 # The MapTile class is going to provide a template for all of the tiles in our world, 
 # which means we need to define the methods that all tiles will need.
@@ -19,15 +18,17 @@ class MapTile:
 	# MapTile is actually a specific flavor of a base class.  We call it an abstract 
 	# base class because we don’t want to create any instances of it.
 	item = None
-	def __init__(self, name, description, item=[], interaction_item=[], isBlocked=False):
+	def __init__(self, name, description, visited_description=None, item=[], interaction_item=[], isBlocked=False, floor=1):
 		self.name = name
 		self.x = None
 		self.y = None
-		self.description = description
-		self.objects = item
-		self.isBlocked = isBlocked
-		self.interaction_item = interaction_item
-		self.visited = False
+		self.description 			= description
+		self.visited_description 	= (visited_description or "This appears to be an unremarkable area.") + "  You've been here before."
+		self.objects 				= item
+		self.isBlocked 				= isBlocked
+		self.interaction_item 		= interaction_item
+		self.visited 				= False
+		self.floor 					= int(floor)
        
 	# We will never create a MapTile directly, instead we will create subclasses. 
 	# The code raise NotImplementedError() will warn us if we accidentally create a MapTile directly.
@@ -39,12 +40,12 @@ class MapTile:
 	
 	def intro_text(self):
 		message = None
-		for item in self.objects:
-			if isinstance(item, items.Movable):
-				message = self.description if item.moved == False else "You see a moved {} in the room.  You've been here before.".format(item.name)
-		
+		#for item in self.objects:
+		#	if isinstance(item, items.Movable):
+		#		message = self.description if not item.unblocked else "You see a moved {} in the room.  You've been here before.".format(item.name)
+				
 		if not message:
-			message = self.description
+			message = self.description if not self.visited else self.visited_description
 		return message	
  
 	def modify_player(self, player):
@@ -66,8 +67,7 @@ class MapTile:
 		i = 0		
 		for index, item in enumerate(self.objects):	
 			i += 1
-			self.objects[index].index = i		
-
+			self.objects[index].index = i
 	
 	def is_visited(self):
 		return self.visited == True
@@ -89,26 +89,6 @@ class MapTile:
 				moves.append(actions.MoveNorth())
 			if player.world.__dict__.get('(%s, %s)' % (self.x, self.y + 1)):
 				moves.append(actions.MoveSouth())
-
-# 			if player.world.__dict__.get( (self.x + 1, self.y) ):
-# 				moves.append(actions.MoveEast())
-# 			if player.world.__dict__.get((self.x - 1, self.y)):
-# 				moves.append(actions.MoveWest())
-# 			if player.world.__dict__.get((self.x, self.y - 1)):
-# 				moves.append(actions.MoveNorth())
-# 			if player.world.__dict__.get((self.x, self.y + 1)):
-# 				moves.append(actions.MoveSouth())
-
-		
-		
-# 			if world.World._world.get((self.x + 1, self.y)):
-# 				moves.append(actions.MoveEast())
-# 			if world.World._world.get((self.x - 1, self.y)):
-# 				moves.append(actions.MoveWest())
-# 			if world.World._world.get((self.x, self.y - 1)):
-# 				moves.append(actions.MoveNorth())
-# 			if world.World._world.get((self.x, self.y + 1)):
-# 				moves.append(actions.MoveSouth())
 		
 		else :
 			# get the moves to go back to the previous location
@@ -131,12 +111,15 @@ class MapTile:
 		
 		if self.objects:
 			for item in self.objects:
-				if issubclass(item.__class__, items.Chest) and item.is_moved() and not item.is_taken():
+				if isinstance(item, items.Container) and item.unblocked and not item.opened:
 					buf.append( actions.Open() )
-				elif issubclass(item.__class__, items.Readable) : #and not item.is_read():
+				elif isinstance(item, items.Readable) : #and not item.is_read():
 					buf.append( actions.Read() )
-				elif not issubclass(item.__class__, items.Chest) and not issubclass(item.__class__, items.Readable) and not item.is_taken() and not isinstance(item, items.Movable):
+				elif ( isinstance(item, items.Movable) and not item.unblocked ) or ( isinstance(item, items.Container) and not item.unblocked and not item.opened ):
+					buf.append( actions.UseAction() )
+				elif not isinstance(item, items.Container) and not isinstance(item, items.Readable) and not isinstance(item, items.Movable):
 					buf.append( actions.PickUp() )
+				
 				
 		
 		# append a unique list of the available action objects (from buf) to moves.  This converts the list to
@@ -155,6 +138,8 @@ class MapTile:
 				,actions.Save()
 				,actions.Quit()
 				,actions.Map()
+				,actions.ReadHidden()
+				,actions.ViewJournal()
 				]
 				
 		if self.name == 'LeaveCaveRoom' and not self.isBlocked:
@@ -169,64 +154,25 @@ class MapTile:
 #################################################################################################################################
 # DEFINE TILES OF THE WORLD
 
-class StartingRoom(MapTile):
-	def __init__(self, name, description, item=[], interaction_item=None, isBlocked=False):
-		super().__init__(name, description, item, interaction_item, isBlocked)
-	
-	def intro_text(self):
-		torch_exists = False
-		message = ''
-		for item in self.objects:
-			if item.name == 'Torch':
-				torch_exists = True
-				message = self.description
-		
-		if not torch_exists:
-			message += "You see an empty holder for a torch on the wall.\nThis seems to be where you started...\n"
-		return message + "\nYou can make out four paths, each equally as dark and foreboding."		
- 
-	def modify_player(self, player):
-		pass
-
 class LeaveCaveRoom(MapTile):
-	def __init__(self, name, description, item=[], interaction_item=None, isBlocked=False):
-		super().__init__(name, description, item, interaction_item, isBlocked)
+	def __init__(self, name, description, visited_description, item=[], interaction_item=None, isBlocked=False, floor=1):
+		super().__init__(name, description, visited_description, item, interaction_item, isBlocked, floor)
 	
 	
-class LootRoom(MapTile):
-	def __init__(self, name, description, item=[], interaction_item=None, isBlocked=False):
-		super().__init__(name, description, item, interaction_item, isBlocked)
-
-	def intro_text(self):
-		if self.objects:
-			return self.description
-		else:
-			return "Another unremarkable part of the cave. You must forge onwards."
-
-	def modify_player(self, player):
-		pass
-
-class ChestRoom(LootRoom):
-	def __init__(self, name, description, item=[], interaction_item=None, isBlocked=False):
-		super().__init__(name, description, item, interaction_item, isBlocked)
-		
-	def intro_text(self):
-		if self.objects:
-			return self.description
-		else:
-			return "An open and empty wooden chest resides in the room.  You've been here before."
-	
-	def modify_player(self, player):
-		pass
-
-class GoldRoom(ChestRoom):
-	def __init__(self, name, description, item=[], interaction_item=None, isBlocked=False):		
-		super().__init__(name, description, item, interaction_item, isBlocked)
+#class LootRoom(MapTile):
+#	def __init__(self, name, description, visited_description, item=[], interaction_item=None, isBlocked=False, floor=None):
+#		super().__init__(name, description, visited_description, item, interaction_item, isBlocked, floor)
+#
+#	def intro_text(self):
+#		return self.description if self.objects and not self.visited else self.visited_description
+#	
+#	def modify_player(self, player):
+#		pass
 
 
 # A tile to encounter an new enemy
 class EnemyRoom(MapTile):
-	def __init__(self, x, y, enemy, interaction_item=None, isBlocked=False):
+	def __init__(self, x, y, enemy, interaction_item=None, isBlocked=False, floor=1):
 		self.enemy = enemy[0]
 		super().__init__(x, y)
 	
@@ -331,13 +277,13 @@ class EnemyRoom(MapTile):
 								# add new object to the global _objects object to be used throughout the world
 								item = item(obj.name, obj.classtype, obj.description, obj.cost, obj.block, obj.hp, obj.level)
 							
-							if issubclass(obj.__class__,gold.Gold):
+							if issubclass(obj.__class__,money.Money):
 								def __constructor__(self, n, cl, d, a):
 									# initialize super of class type
 									super(self.__class__, self).__init__(name=n, classtype=cl, description=d, amt=a)
 								
 								# create the object class dynamically, utilizing __constructor__ for __init__ method
-								item = type(obj.name, (eval("{}.{}".format("gold",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
+								item = type(obj.name, (eval("{}.{}".format("money",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
 								# add new object to the global _objects object to be used throughout the world
 								amt = math.floor(random.randint(math.floor(100*(s/5)), math.floor(100*s)))
 								
@@ -364,7 +310,7 @@ class EnemyRoom(MapTile):
     
 	def intro_text(self):
 		if self.enemy.is_alive():
-			message = self.description
+			message = self.description if not self.visited else self.visited_description
 			
 			message += "\n\n┌{}┐".format("─"*50)
 			message += "\n|" + " {:<25}|".format('Name','') + " {:<4}|".format("HP") + " {:<16}|".format("Damage")
@@ -378,10 +324,9 @@ class EnemyRoom(MapTile):
 			return self.enemy.dead_message
 
 class MerchantRoom(MapTile):
-	def __init__(self, x, y, merchant, interaction_item=None, isBlocked=False):
+	def __init__(self, x, y, merchant, interaction_item=None, isBlocked=False, floor=None):
 		# items is a dict of items to sell and buy
 		self.merchant = merchant
-		#self.objects =  merchant
 		
 		#self.merchant = eval("merchants.Merchant{}()".format(merchant))
 		super().__init__(x, y)
@@ -403,12 +348,12 @@ class MerchantRoom(MapTile):
 		return self.merchant
 
 	def intro_text(self):
-		return self.description
+		return self.description if not self.visited else self.visited_description
 		
 
 
 class RepairVendorRoom(MapTile):
-	def __init__(self, x, y, vendor, interaction_item=None, isBlocked=False):
+	def __init__(self, x, y, vendor, interaction_item=None, isBlocked=False, floor=None):
 		self.vendor = vendor
 		super().__init__(x, y)
 
@@ -422,287 +367,10 @@ class RepairVendorRoom(MapTile):
 		pass
 
 	def intro_text(self):
-		return self.description
+		return self.description if not self.visited else self.visited_description
 		
 
 
-
-
-# class EmptyCavePath(MapTile):
-# 	def __init__(self, name, description, item=None):
-# 		pass
-# 		
-# 	def intro_text(self):
-# 		return self.description
-# 
-# 	def modify_player(self, player):
-# 		pass
-
-# class EmptyCavePath(MapTile):
-# 	def __init__(self, name, description, item=None):
-# 		pass
-# 	#	super().__init__(name, description, item)
-# 	
-# 	def intro_text(self):
-# 		return self.description
-# 
-# 	def modify_player(self, player):
-# 		pass
-
-            
-# class MerchantRoom(MapTile):
-#     def __init__(self, x, y, merchant):
-# 	    # items is a dict of items to sell and buy
-#         self.merchant = eval("merchants.Merchant{}()".format(merchant))
-#         super().__init__(x, y)
-#  
-#  	# Add the buy, sell, and list action options to any enemy room
-#     def available_actions(self):        
-#         available_actions = super().available_actions()
-#         available_actions += [actions.Buy(merchant=self.merchant)
-#         					 ,actions.Sell(merchant=self.merchant)
-# 							 ,actions.List(merchant=self.merchant)
-# 							 ]
-#         return available_actions
-#  
-#     def modify_player(self, player):
-#     	 pass
-#     
-#     def intro_text(self):
-#         return self.merchant.intro_text()
-# 
-# class NoteRoom(MapTile):
-#     def __init__(self, x, y, item):
-#         self.item = eval("items.Note{}()".format(item))
-#         # make the note taken so it doesn't trigger the 'pickup' action
-#         self.item.taken = True
-#         super().__init__(x, y, [self.item])
-#  
-#     def available_actions(self):        
-#         available_actions = super().available_actions()
-#         available_actions.append(actions.Read())
-#         return available_actions
-#  
-#     def modify_player(self, player):
-#     	 pass
-#     
-#     def intro_text(self):
-#         return self.item.intro_text()
-# 
-# class KeyRoom(MapTile):
-#     def __init__(self, x, y, item):
-#         self.item = item
-#         self.item.taken = True 
-#         super().__init__(x, y, [item])
-#   
-#     def modify_player(self, player):
-#     	 pass
-
-
-# class LootRoom(MapTile):
-#     def __init__(self, x, y, item):
-#         if type(item) == str:
-#             block = item.split('>',1)
-#             self.message = block[1]
-#             loot = [x for x in block[0].split('|')]
-#             item = []
-#                             
-#             for i in loot:
-#                 z = None
-#                 if hasattr(weapons, i):
-#                     z = getattr(weapons, i)
-#                 elif hasattr(armor, i):
-#                     z = getattr(armor, i)
-#                 elif hasattr(items, i):
-#                     z = getattr(items, i)
-#                 if z:
-#                     item.append( eval("{}.{}()".format(z.__module__, z.__name__)) )
-#         else:
-#             item = [item] 
-#         
-#         super().__init__(x, y, item)
-#     
-#     def intro_text(self):
-#         if self.objects:
-#             return self.message
-#         else:
-#             return "Another unremarkable part of the cave. You must forge onwards."
-#  
-#     def modify_player(self, player):
-#     	 pass
-
-# class ChestRoom(LootRoom):
-#     def __init__(self, x, y, item):
-#         super().__init__(x, y, item)
-#      
-#     def available_actions(self):
-#         return super().available_actions(actions.Open())
-# 
-#     def modify_player(self, player):
-#         pass
-        
-
-
-# class GoldRoom(ChestRoom):
-#     def __init__(self, x, y, amount):
-#         if amount.isdigit():
-#             self.item = items.Gold(int(amount))
-#         
-#         else:
-#             block = amount.split('>',1)
-#             self.item = items.Gold(int(block[0]))
-#             self.message = block[1]
-#                         
-#             #setattr(self.__class__, 'intro_text', intro_text)
-#         
-#         super().__init__(x, y, self.item)
-#     
-#     def intro_text(self):
-#         if not self.item.is_taken():
-#             return self.message
-#         else:
-#             return "Another unremarkable part of the cave. You must forge onwards."
-
- 
-#     def intro_text(self):
-#         if self.item.is_taken():
-#             return """
-#             An empty treasure chest resides in the corner. You must forge onwards.
-#             """
-#         else:
-#             return """
-#             A very small treasure chest resides in the corner of the room.
-#             """ 
-    
-#     def modify_player(self, player):
-#         pass
-
-# class EnemyRoom(MapTile):
-#     def __init__(self, x, y, enemy):
-#         #if '>' in enemy:
-#         #    block = enemy.split('>',1)
-#         #    self.message = block[1]
-#         #    self.enemy = eval("enemies.{}()".format(block[0]))
-#         #else:
-#         #    self.enemy = eval("enemies.{}()".format(enemy))
-#         #
-#         #self.enemy.objects = []
-#         super().__init__(x, y)        
-#  
-#     def modify_player(self, player):
-# 	    # We didn’t want enemies to respawn. So if the player already visited 
-# 	    # this room and killed the enemy, they should not engage battle again.
-# 	    # So we check if enemy is still alive...
-#         if self.enemy.is_alive():
-#             armor_level = sum([x.hp for x in player.inventory if isinstance(x, items.Armor) and x.is_equipped()])
-#             damage = (self.enemy.damage-armor_level) if self.enemy.damage > armor_level else 0
-#             player.hp = player.hp - damage
-#             print("\n{}Enemy HP is {}{}".format(BgColors.WARNING, self.enemy.hp, BgColors.ENDC))
-#             armor_quote = "{}Damage reduced by {} from armor.{}".format(BgColors.FAIL, armor_level, BgColors.ENDC) if armor_level else ""
-#             print("{}Enemy does {} damage.\nYou have {} HP remaining.{}\n{}".format(BgColors.FAIL, self.enemy.damage, player.hp, BgColors.ENDC, armor_quote))
-# 
-# 	# Add the attack and flee action options to any enemy room
-#     def available_actions(self):
-#         # If the enemy is still alive then the player’s only options are attack or flee. 
-#         # If the enemy is dead, then this room works like all other rooms.
-#         if self.enemy.is_alive():
-#             return [actions.Flee(tile=self)
-#             	   ,actions.Attack(enemy=self.enemy)
-#             	   ,actions.Equip()
-#             	   ,actions.UnEquip()
-#             	   ,actions.ViewInventory()
-#             	   ,actions.Help()
-#             	   ,actions.Use()
-#             	   ,actions.CheckHp()
-#             	   ]
-#         elif not self.enemy.is_alive() and not self.enemy.been_looted():
-#             if not self.enemy.objects:
-#                 number = random.randint(0, 3)
-#                 if number > 0:
-#                     loot = []
-#                     def classloop(container, loot):
-#                         for item in container:
-#                             if item.__subclasses__():
-#                                 classloop(item.__subclasses__(), loot)
-#                             else:
-#                                 loot.append( item )
-#             
-#                     classloop(items.Lootable.__subclasses__(), loot)
-#                     
-#                     for x in range(number):
-#                         item = loot[ random.randint(1, len(loot))-1 ]
-#                         amt = ""
-#                         if isinstance(item, items.Gold):
-#                             amt = random.randint(3,25)
-#                         self.enemy.objects.append( eval("{}.{}({})".format(item.__module__, item.__name__, amt)) )
-#                 
-#         action_list = super().available_actions()
-#         if self.enemy.objects:
-#             action_list += [actions.Loot(enemy=self.enemy)]
-#             
-#         return action_list
-#     
-#     def intro_text(self):
-#         if self.enemy.is_alive():
-#             return self.message
-#         else:
-#             return "The remains of a defeated {} lay rotting on the ground.".format(self.enemy.name.lower())
-#         #return self.enemy.intro_text()
-
-
-
-
-
-#################################################################################################################################
-# Now that we have some basic types of tiles defined, we can make some even more specific versions.
-
-
-
-# class StartingRoom(MapTile):
-#     def __init__(self, x, y):
-#         super().__init__(x, y, [items.Torch()])
-#     
-#     def intro_text(self):
-#         torch_exists = False
-#         message = ""
-#         for item in self.objects:
-#             if isinstance(item, items.Torch):
-#                 torch_exists = True
-#                 message = """You awaken, dizzy and confused.  You find yourself on the dirty 
-#                 ground in a cave with a flickering torch on the wall.  How did you get here?\n"""
-#             
-#         if not torch_exists:
-#             message += "You see an empty holder for a torch on the wall.\nThis seems to be where you started...\n"
-#         
-#         return message + "\nYou can make out four paths, each equally as dark and foreboding."
-#  
-#     def modify_player(self, player):
-#         #Room has no action on player
-#         pass
-# 
-# class EmptyCavePath(MapTile):
-#     def intro_text(self):
-#         return "Another unremarkable part of the cave. You must forge onwards."
-#  
-#     def modify_player(self, player):
-#         #Room has no action on player
-#         pass
-
-# class LeaveCaveRoom(MapTile):
-#     def intro_text(self):
-#         return """
-#         You see a bright light in the distance...
-#         ... it grows as you get closer! It's sunlight!
-#  
-#  
-#         Victory is yours!
-#         """
-#  
-#     def modify_player(self, player):
-#         player.victory = True
-
-
-         
         
         
         
