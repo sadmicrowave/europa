@@ -2,7 +2,7 @@
 
 
 class Enemy:	
-	def __init__(self, name, classtype, description, hp, damage, dead_message, level):
+	def __init__(self, name, classtype, description, hp, damage, dead_message, level, loot_type=None):
 		self.name 		 = name
 		self.description = description
 		self.hp 		 = hp
@@ -10,6 +10,7 @@ class Enemy:
 		self.classtype	 = classtype
 		self.dead_message  = dead_message
 		self.level		 = level
+		self.loot_type	 = loot_type.upper() or None
 		self.objects 	 = []
 		self.looted	 	 = False
 		
@@ -26,5 +27,10 @@ class Enemy:
 		return self.looted
     
 	def get_items(self):
-		return self.objects 
+		return self.objects
+	
+	def match_loot_type(self, obj):
+		return 	obj.__class__.__name__.upper() == self.loot_type
 
+	def __str__(self):
+		return self.description if self.is_alive() else self.dead_message

@@ -4,13 +4,14 @@
 # from the one you learned in algebra. In the game world, (0,0) is in 
 # the top left corner, x increases to the right, and y increases to the bottom.
 
-import random, inspect, math
+import random, inspect, math, textwrap
 from modules.bgcolors import BgColors
 from modules import actions
 from modules import items
 from modules import armor
 from modules import weapons
 from modules import world
+from modules import enemies
 
 # The MapTile class is going to provide a template for all of the tiles in our world, 
 # which means we need to define the methods that all tiles will need.
@@ -111,14 +112,17 @@ class MapTile:
 		
 		if self.objects:
 			for item in self.objects:
+				#print( isinstance(item, items.Readable), item )
 				if isinstance(item, items.Container) and item.unblocked and not item.opened:
 					buf.append( actions.Open() )
 				elif isinstance(item, items.Readable) : #and not item.is_read():
 					buf.append( actions.Read() )
 				elif ( isinstance(item, items.Movable) and not item.unblocked ) or ( isinstance(item, items.Container) and not item.unblocked and not item.opened ):
 					buf.append( actions.UseAction() )
-				elif not isinstance(item, items.Container) and not isinstance(item, items.Readable) and not isinstance(item, items.Movable):
+				elif not isinstance(item, items.Container) and not isinstance(item, items.Readable) and not isinstance(item, items.Movable) and not isinstance(item, enemies.Enemy):
 					buf.append( actions.PickUp() )
+				elif self.enemy.objects:
+					buf.append( actions.Loot(enemy=self.enemy) )
 				
 				
 		
@@ -172,18 +176,21 @@ class LeaveCaveRoom(MapTile):
 
 # A tile to encounter an new enemy
 class EnemyRoom(MapTile):
-	def __init__(self, x, y, enemy, interaction_item=None, isBlocked=False, floor=1):
+	def __init__(self, name, description, visited_description=None, enemy=[], interaction_item=[], isBlocked=False, floor=1):
+	#def __init__(self, x, y, enemy, interaction_item=None, isBlocked=False, floor=1):
 		self.enemy = enemy[0]
-		super().__init__(x, y)
+		#super().__init__(x, y)
+		super().__init__(name, description, visited_description, enemy, interaction_item, isBlocked, floor)
 	
 	def modify_player(self, player):
 		# We didn’t want enemies to respawn. So if the player already visited 
 		# this room and killed the enemy, they should not engage battle again.
 		# So we check if enemy is still alive...
 		if self.enemy.is_alive():
-			# give a 65% chance the enemy hits you with an attack
+			# provide a likelihood that the enemy will strike you, based on the evade skill
 			if random.random() > (player.skills['evade']['value']/100): 
 			
+				# get full armor level by adding blocking power of all armor in inventory that is equipped
 				armor_level = sum( [x.block for x in player.inventory if issubclass(x.__class__, armor.Armor) and x.is_equipped()] )
 				#damage = (self.enemy.damage-armor_level) #if self.enemy.damage > armor_level else 0
 				damage = self.enemy.damage
@@ -191,20 +198,29 @@ class EnemyRoom(MapTile):
 				# get the list of all inventory armor items that are equipped, in order to calculate the armor/block level
 				equipped = [x for x in player.inventory if issubclass(x.__class__, armor.Armor) and x.is_equipped()]
 				
-				damage_inflicted = damage*(1-(player.skills['block']['value']/100)) #/ len(equipped)
+				# set the damage that the enemy can do, based on blocking capability against enemy damage
+				damage_inflicted = ( damage * (1-(player.skills['block']['value']/100)) ) if armor_level else damage #/ len(equipped)
 				damage = damage_inflicted
+				total_degrade = 0
+				
+				# split the damage inflicted across all equipped armor to equally degrade any armor that is equipped, and decrease potential damage each time, for a potential final damage amount on the player hp
 				for i in equipped :
 					# enemy_damage * [inverse of blocking skill points] / [number of equipped armor items]
 					#armor_damage = damage*(1-(player.skills['block']['value']/100)) / len(equipped)
 					
-					i.hp = max(round(i.hp - (damage_inflicted/len(equipped)),2) if i.level <= self.enemy.level else i.hp,0)
+					#i.hp = max(round( i.hp - (damage_inflicted/len(equipped)),2) if i.level <= self.enemy.level else i.hp,0)
+					degrade = ( damage * (1-(player.skills['block']['value']/100)) ) / len(equipped) if armor_level else 0
+					i.hp = max(round( i.hp - degrade, 2) if i.level <= self.enemy.level else i.hp,0)
 					if i.hp <= 0 :
 						i.equip = False
 						print("{}The {} has broken! You must equip different armor!{}".format(BgColors.FAIL, i.name, BgColors.ENDC))
 					
 					damage = max(damage - (armor_level/len(equipped)),0)
+					total_degrade += degrade
 				
-				armor_quote = ". Your armor blocks {}!".format(min(damage_inflicted,armor_level)) if armor_level else '!'
+				#armor_quote = ". Your armor blocks {}!".format( min(damage_inflicted,armor_level) ) if armor_level else '!'
+				armor_quote = ". Your armor blocks {}!".format( min(round(total_degrade,2), armor_level) ) if armor_level else '!'
+				#print("{}Enemy attacks with {} damage{}{}".format(BgColors.FAIL, round(damage_inflicted,2), armor_quote, BgColors.ENDC))
 				print("{}Enemy attacks with {} damage{}{}".format(BgColors.FAIL, round(damage_inflicted,2), armor_quote, BgColors.ENDC))
 				
 				# adjust player health based on remaining damage after armor blocks
@@ -234,94 +250,104 @@ class EnemyRoom(MapTile):
 				,actions.Skills()
 				,actions.Quit()
 				]
-		elif not self.enemy.is_alive() and not self.enemy.been_looted():
+		elif not self.enemy.is_alive() and self.enemy.loot_type and not self.enemy.been_looted():
 			# create some objects on the enemy to loot if they don't already exist
 			if not self.enemy.objects:
 				r = random.random()
 				s = player.skills['loot']['value']/100
+					
 				if r <= s:
 					loot = []
 					# get a full list of all the lootable objects from the items master list
 					for k, v in player.world._objects.items():
-						if issubclass(v.__class__, items.Lootable) and v.level == self.enemy.level:
+						# only add the item to the loot container if the item is of class type lootable, matches the same lootable type as the enemy has in loot_type, and is the same level as the enemy
+						if issubclass(v.__class__, items.Lootable) and self.enemy.match_loot_type(v) and v.level == self.enemy.level:
 							loot.append( v )
 										
-					# calculate number of objects to be looted, based on threshold defined from player looting skill
-					ran = min(math.floor(s/r), math.floor(100*(s/5)))
-					# iterate for as many times as "ran" variable says there should be items lootable on the enemy
-					for x in range( ran ):
-						# randomly select one of the lootable items inside the master loot container
-						loot_index = random.randint(1, len(loot))-1
-						try:
-							obj = loot[ loot_index ]
-							item_name = obj.name.replace(' ','')
-														
-							if issubclass(obj.__class__, weapons.Weapon):
-								# define an __init__ constructor method to be used when dynamically creating the object class
-								def __constructor__(self, n, cl, d, c, da, h, l):
-									# initialize super of class type
-									super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, damage=da, hp=h, level=l)
-								
-								# create the object class dynamically, utilizing __constructor__ for __init__ method
-								item = type(obj.name, (eval("{}.{}".format("weapons",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
-								# add new object to the global _objects object to be used throughout the world
-								item = item(obj.name, obj.classtype, obj.description, obj.cost, obj.damage, obj.orig_hp, obj.level)
-				
-							if issubclass(obj.__class__, armor.Armor):
-								def __constructor__(self, n, cl, d, c, b, h, l):
-									# initialize super of class type
-									super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, block=b, hp=h, level=l)
-							
-								# create the object class dynamically, utilizing __constructor__ for __init__ method
-								item = type(obj.name, (eval("{}.{}".format("armor",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
-								# add new object to the global _objects object to be used throughout the world
-								item = item(obj.name, obj.classtype, obj.description, obj.cost, obj.block, obj.hp, obj.level)
-							
-							if issubclass(obj.__class__,money.Money):
-								def __constructor__(self, n, cl, d, a):
-									# initialize super of class type
-									super(self.__class__, self).__init__(name=n, classtype=cl, description=d, amt=a)
-								
-								# create the object class dynamically, utilizing __constructor__ for __init__ method
-								item = type(obj.name, (eval("{}.{}".format("money",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
-								# add new object to the global _objects object to be used throughout the world
-								amt = math.floor(random.randint(math.floor(100*(s/5)), math.floor(100*s)))
-								
-								item = item(obj.name, obj.classtype, obj.description, amt)
-							
-							# remove the item from master lootable index so we can't select it again
-							del loot[ loot_index ]
+					# ensure the loot list is not empty
+					if loot :
+						# calculate number of objects to be looted, based on threshold defined from player looting skill
+						ran = min(math.floor(s/r), math.floor(100*(s/5)))
+						# iterate for as many times as "ran" variable says there should be items lootable on the enemy
+						for x in range( ran ):
 						
-							#amt = ""
-							#
-							#	amt = math.floor(random.randint(math.floor(100*(s/5)), math.floor(100*s)))
+							# randomly select one of the lootable items inside the master loot container
+							loot_index = random.randint(1, len(loot))-1
+						
+							try:
+								obj = loot[ loot_index ]
+								item_name = obj.name.replace(' ','')
+															
+								if issubclass(obj.__class__, weapons.Weapon):
+									# define an __init__ constructor method to be used when dynamically creating the object class
+									def __constructor__(self, n, cl, d, c, da, h, l):
+										# initialize super of class type
+										super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, damage=da, hp=h, level=l)
+									
+									# create the object class dynamically, utilizing __constructor__ for __init__ method
+									item = type(obj.name, (eval("{}.{}".format("weapons",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
+									# add new object to the global _objects object to be used throughout the world
+									item = item(obj.name, obj.classtype, obj.description, obj.cost, obj.damage, obj.orig_hp, obj.level)
+					
+								if issubclass(obj.__class__, armor.Armor):
+									def __constructor__(self, n, cl, d, c, b, h, l):
+										# initialize super of class type
+										super(self.__class__, self).__init__(name=n, classtype=cl, description=d, cost=c, block=b, hp=h, level=l)
+								
+									# create the object class dynamically, utilizing __constructor__ for __init__ method
+									item = type(obj.name, (eval("{}.{}".format("armor",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
+									# add new object to the global _objects object to be used throughout the world
+									item = item(obj.name, obj.classtype, obj.description, obj.cost, obj.block, obj.hp, obj.level)
+								
+								if issubclass(obj.__class__,items.Money):
+									def __constructor__(self, n, cl, d, a):
+										# initialize super of class type
+										super(self.__class__, self).__init__(name=n, classtype=cl, description=d, amt=a)
+									
+									# create the object class dynamically, utilizing __constructor__ for __init__ method
+									item = type(obj.name, (eval("{}.{}".format("money",obj.classtype.replace(' ',''))),), {'__init__':__constructor__})
+									# add new object to the global _objects object to be used throughout the world
+									amt = math.floor(random.randint(math.floor(100*(s/5)), math.floor(100*s)))
+									
+									item = item(obj.name, obj.classtype, obj.description, amt)
+								
+								# remove the item from master lootable index so we can't select it again
+								del loot[ loot_index ]
 							
-							# place the item/object onto the enemy
-							self.enemy.objects.append( item )
-							
-						except IndexError:
-							pass
+								#amt = ""
+								#
+								#	amt = math.floor(random.randint(math.floor(100*(s/5)), math.floor(100*s)))
+								
+								# place the item/object onto the enemy
+								self.enemy.objects.append( item )
+								
+							except IndexError:
+								pass
 				
 		action_list = super().available_actions(player)
-		if self.enemy.objects:
-			action_list += [actions.Loot(enemy=self.enemy)]
+		
+		#if self.enemy.objects:
+		#	action_list += [actions.Loot(enemy=self.enemy)]
             
 		return action_list
-    
+		
+		
 	def intro_text(self):
-		if self.enemy.is_alive():
-			message = self.description if not self.visited else self.visited_description
+		print( textwrap.fill( self.description if not self.visited else self.visited_description, 70) )
+	
+		if self.enemy.is_alive():		
+			print("\n{}┌{}┐".format(BgColors.FAIL, "─"*50))
+			print("|", "{:<25}|".format('Name'), "{:<4}|".format("HP"), "{:<16}|".format("Damage"))
+			#print("|", "{:<3}|".format('#'), "{:<20}|".format('Name'), "{:<7}|".format('Value'), "{:<5}|".format("HP"), "{:<5}|".format("DEF"), "{:<5}|".format("DMG"), "{:<53}|".format("Description")) #{:<20}
+
+			print("| {} |".format("─"*48))
+			print("|", "{:<25}|".format(self.enemy.name), "{:<4}|".format(self.enemy.hp), "{:<16}|".format(self.enemy.damage))
 			
-			message += "\n\n┌{}┐".format("─"*50)
-			message += "\n|" + " {:<25}|".format('Name','') + " {:<4}|".format("HP") + " {:<16}|".format("Damage")
-			message += "\n|{}|".format("─"*50)
-			message += "\n|{}".format(BgColors.FAIL) + " {:<25}|".format(self.enemy.name) + " {:<4}|".format(self.enemy.hp) + " {:<16}{}|".format(self.enemy.damage, BgColors.ENDC)
-			message += "\n└{}┘".format("─"*50)
-			message += "\nCheck your current stats with the [cs] command."
+			print("└{}┘".format("─"*50))
+			print("{}Check your current stats with the [cs] command.".format(BgColors.NORMAL))
 			
-			return message
-		else:
-			return self.enemy.dead_message
+		return None			
+			
 
 class MerchantRoom(MapTile):
 	def __init__(self, x, y, merchant, interaction_item=None, isBlocked=False, floor=None):

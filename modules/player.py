@@ -28,12 +28,12 @@ class Player:
 		self.journal 	= []
 		
 		self.backpack	= self.world._objects['SmallBackpack']
-		self.wallet.add_credits(10)
+		#self.wallet.add_credits(10)
 				
 		self.skills	= {	'attack':
 							{'name':'Attacking'
 							 ,'desc':'Ability to land an attack on an enemy.'
-							 ,'value':40
+							 ,'value':70
 							 }
 						,'evade':
 							{'name':'Evasion'
@@ -55,7 +55,7 @@ class Player:
 							 ,'desc':'Rate at which equipped armor resist degradation from attacks.'
 							 ,'value':20
 							 }
-						}
+						}		
 
 	def is_alive(self):
 		return self.hp > 0
@@ -264,8 +264,10 @@ what items you possess, and what objects are around you.
 			self.location_x += dx
 			self.location_y += dy
 			
-			print(BgColors.NORMAL + "\n" + textwrap.fill( self.world.tile_exists(self.location_x, self.location_y).intro_text(), 70)  + BgColors.ENDC)
-			#print( re.sub(r'(^[ \t]+|[ \t]+(?=:))', '', BgColors.NORMAL + self.world.tile_exists(self.location_x, self.location_y).intro_text().replace(r'\n','\n'), flags=re.M) )
+			intro_text = self.world.tile_exists(self.location_x, self.location_y).intro_text()
+			if intro_text :
+				print(BgColors.NORMAL + "\n" + textwrap.fill( intro_text, 70)  + BgColors.ENDC)
+				#print( re.sub(r'(^[ \t]+|[ \t]+(?=:))', '', BgColors.NORMAL + self.world.tile_exists(self.location_x, self.location_y).intro_text().replace(r'\n','\n'), flags=re.M) )
 			
 			# set the bool for knowing if we have visited this room/tile before
 			self.world.tile_exists(self.location_x, self.location_y).visited = True
@@ -329,21 +331,28 @@ what items you possess, and what objects are around you.
 		
 	def loot(self, enemy):
 		# get the objects on the enemy that can be looted and that are not already taken
-		objects = [i for i in enemy.get_items() if not i.is_taken()]
+		#objects = [i for i in enemy.get_items() if not i.is_taken()]
+		objects = [i for i in enemy.get_items()]
 		# if there are objects to be lootted
 		if objects:
 			# iterate over the items to be looted
 			for item in objects:
-				if hasattr(item, 'amt'):
-					print("{}You picked up {} {}!{}".format(BgColors.WARNING, item.amt, item.name, BgColors.ENDC))
+				if isinstance(item, items.Money):
+					#print("{}You picked up {} {}!{}".format(BgColors.WARNING, item.amt, item.name, BgColors.ENDC))
+					print( item )
+					# add the gold amount to your wallet
+					self.wallet.add_credits(item.cost)
 				else:
-					print("{}You picked up a {}!{}".format(BgColors.WARNING, item.name, BgColors.ENDC))
+					print("{}You picked up the {}!{}".format(BgColors.WARNING, item.name, BgColors.ENDC))
 				# remove the item from the enemy
 				enemy.objects.remove(item)
 				# add the item to your player inventory
+				#self.inventory.append(item)
+				# add the item to the player inventory
 				self.inventory.append(item)
-				# set the taken property to true so it doesn't show up again as lootable
-				#item.taken = True
+				# reindex the player inventory based on our categorization rules
+				self.reindex_inventory()
+
 		# set the enemy (passed variable) looted property to true
 		enemy.looted = True
 
@@ -447,6 +456,10 @@ Find a larger backpack or drop items from your inventory.{}"""
 				# if the item is an instance of the armor or weapons class, then provide a message about remembering to equip your item
 				if isinstance(item,armor.Armor) or isinstance(item,weapons.Weapon):
 					print("{}Equip the {} with the [equip] command.{}".format(BgColors.WARNING, item.name, BgColors.ENDC))
+				else :
+					# provide a message about remembering to check your inventory for more stats about the item
+					print("{}Check your inventory with the [i] command.{}".format(BgColors.WARNING, BgColors.ENDC))
+
 				# add the item to the player inventory
 				self.inventory.append(item)
 				# reindex the player inventory based on our categorization rules
@@ -529,11 +542,26 @@ Find a larger backpack or drop items from your inventory.{}"""
 					# set cost to 0 so it can't be unintentionally opened again and added to wallet somehow
 					item.cost = 0
 				
+				# if the item is a readable item, and you opened the terminal or enclosure in order to read it, then print note to screen
+				elif isinstance(item.objects[0], items.Readable):
+					# print the name of the narrative
+					print(item.objects[0].name + "\n")
+					# print the narrative text
+					print( textwrap.fill("{}".format(re.sub(r'(^[ \t]+|[ \t]+(?=:))', '', item.objects[0].narrative, flags=re.M)),70) )
+					
+					# add the narrative to inventory if not already present
+					if not item.objects[0].read :
+						# add the item to the player inventory
+						self.journal.append(item.objects[0])
+				
 				# if the item is anything other than money within the object you opened, then print this
 				else :
 					print("{}You opened the {} and found {}!{}".format(BgColors.OKGREEN, item.name, item.objects[0].name, BgColors.ENDC))
 					# add the item to your inventory
 					self.inventory.append(item.objects[0])
+					# provide a message about remembering to check your inventory for more stats about the item
+					print("{}Check your inventory with the [i] command.{}".format(BgColors.WARNING, BgColors.ENDC))
+					
 			else :
 				print("{}The {} is already opened!{}".format(BgColors.FAIL, item.name, BgColors.ENDC))
 				
@@ -564,6 +592,7 @@ Find a larger backpack or drop items from your inventory.{}"""
 			# ensure that the item we want to use is usable
 			if issubclass(item.__class__, items.Usable):
 				# check if the item is a serum
+				#print( room_item )
 				if issubclass(item.__class__, serums.Serum):
 				#if item.classtype == 'serum':
 					# if it is a serum, then increase the player health by the hp points of the serum
@@ -585,7 +614,7 @@ Find a larger backpack or drop items from your inventory.{}"""
 
 				# check if the used item class matches the desired class of the usable item class specified in the room item details 
 				# this is for rooms with barrier items that have an interaction item, like a room with rock pile as movable
-				elif room_item and hasattr(room_item, 'interaction_item') and item.__class__ == room_item.interaction_item[0].__class__ and item.name == room_item.interaction_item[0].name :
+				elif list(filter(None.__ne__, room_item.interaction_item)) and room_item and hasattr(room_item, 'interaction_item') and item.__class__ == room_item.interaction_item[0].__class__ and item.name == room_item.interaction_item[0].name :				
 				#elif room_item and hasattr(room_item, 'interaction_item') and item.classtype == room_item.interaction_item[0].classtype :
 					# set the item as moved
 					room_item.unblocked = True
@@ -989,7 +1018,7 @@ won't find better deals anywhere else in the realm!
 					print("{}The {} has broken! You must equip a different weapon!{}".format(BgColors.FAIL, weapon.name, BgColors.ENDC))
 				# if the enemy is dead after your attack, then print a successfully killed message
 				if not enemy.is_alive():
-					print("{}You killed {}!{}\n".format(BgColors.OKGREEN, enemy.name, BgColors.ENDC))
+					print("{}You killed the {}!{}\n".format(BgColors.OKGREEN, enemy.name, BgColors.ENDC))
 					print("Check your HP with the hp command!")
 			# if the random number is outside of the attack skill percentage, then you missed
 			else:

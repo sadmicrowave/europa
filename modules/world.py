@@ -65,7 +65,7 @@ class World:
 		# iterate over rows in the worksheet
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
-			if index > 0 :
+			if index > 0 and row[0].value:
 				# create a name for the class object name
 				room_name = row[0].value.replace(' ','')
 				# define an __init__ constructor method to be used when dynamically creating the object class
@@ -223,7 +223,7 @@ class World:
 				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				## add new object to the global _objects object to be used throughout the world
 				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)
-				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value)' % (name, row[1].value) )
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value, row[7].value)' % (name, row[1].value) )
 	
 	
 	def load_items(self,name='items'):

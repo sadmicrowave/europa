@@ -58,7 +58,7 @@ class Lootable(Item):
 
 class Container(Item):
 	def __init__(self, name, classtype, description, item=[], interaction_item=[]):
-		self.unblocked = False
+		self.unblocked = False if interaction_item else True
 		self.objects = item
 		self.opened = False
 		#cost = 0
@@ -112,7 +112,7 @@ class Movable():
 		self.description 	= description
 		self.unblocked_description = moved_description
 		self.classtype 		= classtype
-		self.items			= items
+		self.interaction_item = items
 		self.taken			= False
 		self.unblocked		= False
 
