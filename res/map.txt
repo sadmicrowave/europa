@@ -1,34 +1,36 @@
-								
-								
-						L1MedicalOffice2		
-L1MessHall7	L1MessHall6			L1MedicalOffice1	L1EncounterDyingDoctor	L1MedicalWingHallE1	L1MedicalWingHallE2	L1MedicalBay2
-L1MessHall5	L1MessHall4				L1MedicalWingHallWS1		L1MedicalWingHallES1	
-L1MessHall2	L1MessHall3		L1BarracksNW11	L1StartingRoom	L1MedicalWingHallWS2		L1MedicalWingHallES2	
-L1MessHall1		L1BarracksNW3			L1MedicalWingHallWS3		L1MedicalWingHallES3	
-L1MainCorridorNW6	L1MainCorridorNW5	L1MainCorridorNW4	L1MainCorridorNW3	L1MainCorridorNW2	L1MainCorridorNW1	L1MainCorridorN1	L1MainCorridorNE1	
-L1WestCorridorNW7		L1BarracksNW2		L1BarracksNW1				
-L1WestCorridorNW8	L1BarracksNW4		L1WestStorageRoom1					
-L1WestCorridorNW9		L1BarracksNW8	L1WestCorridorNW22	L1BarracksNW9				
-L1WestCorridorNW10	L1BarracksNW5		L1WestCorridorNW21					
-L1WestCorridorNW11		L1BarracksNW7	L1WestCorridorNW20	L1BarracksNW10				
-L1WestCorridorNW12	L1BarracksNW6		L1WestCorridorNW19					
-L1WestCorridorNW13			L1WestCorridorNW18					
-L1WestCorridorNW14	L1WestCorridorNW15	L1WestCorridorNW16	L1WestCorridorNW17					
-	L1WestCorridorNW23							
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
-								
+												
+												
+						L1MedicalOffice2						
+L1MessHall7	L1MessHall6			L1MedicalOffice1	L1EncounterDyingDoctor	L1MedicalWingHallE1	L1MedicalWingHallE2	L1MedicalBay2				
+L1MessHall5	L1MessHall4				L1MedicalWingHallWS1		L1MedicalWingHallES1					
+L1MessHall2	L1MessHall3			L1StartingRoom	L1MedicalWingHallWS2		L1MedicalWingHallES2					
+L1MessHall1		L1BarracksNW3			L1MedicalWingHallWS3		L1MedicalWingHallES3					
+L1MainCorridorNW6	L1MainCorridorNW5	L1MainCorridorNW4	L1MainCorridorNW3	L1MainCorridorNW2	L1MainCorridorNW1	L1MainCorridorN1	L1MainCorridorNE1					
+L1WestCorridorNW7		L1BarracksNW2		L1BarracksNW1			L1EastCorridorNE2		L1ContainmentWingCell1		L1ContainmentWingCell3	
+L1WestCorridorNW8	L1BarracksNW4		L1WestStorageRoom1				L1EastCorridorNE3	L1ContainmentWingHall1	L1ContainmentWingHall2	L1ContainmentWingHall3	L1ContainmentWingHall4	L1ContainmentWingCell5
+L1WestCorridorNW9		L1BarracksNW8	L1WestCorridorNW22	L1BarracksNW9	L1CrawlSpaceNW1	L1CrawlSpaceNW2	L1EastCorridorNE4		L1ContainmentWingCell2		L1ContainmentWingCell4	
+L1WestCorridorNW10	L1BarracksNW5		L1WestCorridorNW21				L1EastCorridorNE5	L1ContainmentWingOffice1				
+L1WestCorridorNW11		L1BarracksNW7	L1WestCorridorNW20	L1BarracksNW10			L1EastCorridorNE6					
+L1WestCorridorNW12	L1BarracksNW6		L1WestCorridorNW19				L1EastCorridorNE7					
+L1WestCorridorNW13			L1WestCorridorNW18	L1BarracksNW11			L2 Shipping/Receiving Dock					
+L1WestCorridorNW14	L1WestCorridorNW15	L1WestCorridorNW16	L1WestCorridorNW17									
+	L1WestCorridorMW1											
+L1ArmoryWingHall1	L1WestCorridorMW2		Crew Quarters									
+L1ArmoryWingHall2												
+L1ArmoryWingHall3	L1ArmoryWingStorage1	L1ArmoryWingStorage1a										
+L1ArmoryWingHall4								Bridge & Command Center				
+L1ArmoryWingHall5	L1ArmoryWingStorage2	L1ArmoryWingStorage2a										
+L1ArmoryWingStorage3												
+L1ArmoryWingStorage3a												
+												
+												
+												
+Space Walk Chamber												
+												
+												
+Laboratory												
+												
+												
+												
+												
+												

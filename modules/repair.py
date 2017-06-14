@@ -29,3 +29,6 @@ class Repair:
 			cost = math.ceil(repair_hp * (1+(item.level/10)))
 			
 		return cost
+	
+	def __str__(self):
+		return self.description

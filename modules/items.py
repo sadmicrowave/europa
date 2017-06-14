@@ -41,18 +41,18 @@ class Wallet:
 
 	def add_credits(self, amt):
 		self.value += amt
-		print("{}{} credit(s) has been added to your wallet card.{}".format(BgColors.WARNING, amt, BgColors.ENDC))
+		print("{}{} credit(s) added to your wallet card.{}".format(BgColors.WARNING, amt, BgColors.ENDC))
 
 	def remove_credits(self, amt):
 		self.value -= amt
-		print("{}{} credit(s) has been removed from your wallet card.{}".format(BgColors.FAIL, amt, BgColors.ENDC))
+		print("{}{} credit(s) removed from your wallet card.{}".format(BgColors.FAIL, amt, BgColors.ENDC))
 
 
 class Lootable(Item):
 	def __init__(self, name, classtype, description, cost, hp, level):
 		self.classtype = classtype
 		self.level = level
-		self.orig_hp = hp
+		#self.orig_hp = hp
 		super().__init__(name, description, cost)
 
 
@@ -73,10 +73,12 @@ class Usable(Item):
 	def __init__(self, name, classtype, description, cost, hp, level):
 		self.hp = hp
 		super().__init__(name, description, cost)
-		
+
+class Keypad(Usable):
+	pass	
 
 class Backpack(Lootable):
-	def __init__(self, name, classtype, description, cost, hp, level):		
+	def __init__(self, name, classtype, description, cost, hp, level):
 		self.classtype = classtype
 		self.level = level
 		super().__init__(name, classtype, description, cost, hp, level)
@@ -107,12 +109,13 @@ class Money(Container):
 		
 
 class Movable():
-	def __init__(self, name, classtype, description, moved_description, items):
+	def __init__(self, name, classtype, description, moved_description, interaction_item=[], code=None):
 		self.name 			= name
 		self.description 	= description
 		self.unblocked_description = moved_description
 		self.classtype 		= classtype
-		self.interaction_item = items
+		self.interaction_item = interaction_item
+		self.code			= code
 		self.taken			= False
 		self.unblocked		= False
 
@@ -124,6 +127,9 @@ class Movable():
 
 	def move(self):
 		pass
+	
+	def key_match(self, keycode):
+		return str(self.code) == str(keycode)
 	
 	def __str__(self):
 		return self.description if not self.unblocked else self.unblocked_description

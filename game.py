@@ -14,6 +14,8 @@ from modules import serums
 from modules import enemies
 from modules import merchants
 from modules import repair
+from modules.helpers.health import Health
+from modules.helpers.state import State
 
 from tkinter import *
 from openpyxl import load_workbook
@@ -24,6 +26,7 @@ from jsonpickle.unpickler import Unpickler
 # from the human player. In graphical games, the loop runs many times per second. Since we dont need
 # to continually refresh the players screen for a text game, our code will actually pause until the player provides input. 
 class App :
+	player = None
 
 	def __init__(self):
 		# override the standard sys output to redirect the typical built-in print() command
@@ -40,7 +43,7 @@ class App :
 		self.root.attributes('-alpha', 0.85)
 		self.root.geometry("900x800")
 		# set the application title
-		self.root.title("Dispoina - Adventure Game")
+		self.root.title("The Europa Protocol - Adventure Game")
 		
 		# bind an event exection on the "enter" key user event
 		self.root.bind('<Return>', self.inputText)
@@ -75,16 +78,17 @@ class App :
 		self.load_game_state()
 	
 	
-	def inputText(self, event):
-		# get the text from the input box
-		i = self.inputline.get().lower()
-		# delete the contents from the input box
-		self.inputline_entry.delete(0,'end')
-		# send the contents of the input box to the print function
-		print("\n" + BgColors.NORMAL + "Your Action: " + i )
-		# execute the next method in line, set by previous call
-		#eval('self.%s(%s)' % (self.next_method, i))
-		self.next_method(i)
+	def inputText(self, event, player=None):
+		if (self.player and Health.is_alive(self.player)) or not player:
+			# get the text from the input box
+			i = self.inputline.get().lower().strip()
+			# delete the contents from the input box
+			self.inputline_entry.delete(0,'end')
+			# send the contents of the input box to the print function
+			print("\n" + BgColors.NORMAL + "Your Action: " + i )
+			# execute the next method in line, set by previous call
+			#eval('self.%s(%s)' % (self.next_method, i))
+			self.next_method(i)
 	
 	
 	def print_redirect(self, inputStr):
@@ -115,7 +119,6 @@ class App :
 			
 		self.tag = tag
 		
-		
 		# replace reference to [color] and [endc] identifier in text string
 		inputStr = re.sub(r'(\[!\w+!])', '', inputStr)
 		# add the text to the window widget
@@ -129,10 +132,10 @@ class App :
 	
 	def load_game_state(self):
 		# check if there is a game save file with a previously saved state
-		if os.path.exists('res/gsave.pkl') :
+		if os.path.exists('res/saved/gsave.pkl') :
 			# prompt the user to answer if they want to load from a saved state
 			#action_input = input( BgColors.HEADER + 'Load Saved Game? [y/n]: ' + BgColors.ENDC).lower()
-			print( BgColors.HEADER + '\n\nLoad Saved Game? [y/n]: ' + BgColors.ENDC )
+			print( BgColors.HEADER + 'Load Saved Game? [y/n]: ' + BgColors.ENDC )
 			self.next_method = self.load_game_state_check
 		# otherwise a save file was not found
 		else :
@@ -145,7 +148,7 @@ class App :
 		# if the answer is yes, they want to load from the previous save, then attempt to load
 		if input.lower() == 'y' :
 			# open the save state file
-			with open('res/gsave.pkl', 'r') as output:
+			with open('res/saved/gsave.pkl', 'r') as output:
 				# assign player object as the pickled object, decoded
 				self.player = jsonpickle.decode(output.read())
 				# assign the world object as the player.world property
@@ -162,24 +165,8 @@ class App :
 			self.load_game_state()
 	
 	
-	
-	
 	def create_new_world(self):
 		self.world = World()
-		# load all world objects
-		self.world.load_armor()
-		self.world.load_weapons()
-		self.world.load_serums()
-		self.world.load_barrier_items()
-		self.world.load_items()
-		self.world.load_notes()
-		self.world.load_enemies()
-		self.world.load_merchants()
-		self.world.load_repair()
-		self.world.load_money()
-		self.world.load_containers()
-		self.world.load_wallet()
-		self.world.load_tiles()
 		self.player = Player(self.world)
 		
 		self.load_starting_position()
@@ -200,14 +187,12 @@ class App :
 
 	
 	def play(self):
-		
 		# check if the player is alive, end game if not
-		if not self.player.is_alive() :
-			self.end_game()
+		if not Health.is_alive(self.player):
+			State.game_end()
 		
 		# if player is alive, and has not achieved victory, then continue with main logic
 		elif not self.player.victory :
-				
 			# The first thing the loop does is find out what room the player is in and then executes the behavior for that room.
 			self.player.room = self.world.tile_exists(self.player.location_x, self.player.location_y)
 				
@@ -215,8 +200,8 @@ class App :
 				self.player.room.modify_player(self.player)
 
 			# display the mini help options for available options (not extended help view)
-			if not isinstance(self.action, actions.HiddenAction):
-				self.player.help()
+			#if not isinstance(self.action, actions.HiddenAction):
+			self.player.help()
 										
 			# prompt the user to input an action
 			#print(BgColors.HEADER + '\n\nAction: ' + BgColors.ENDC, end='')
@@ -236,13 +221,27 @@ class App :
 				action_found = True
 				# if there is a space in the command input, then split the content on the space, and use the second item as the key/index passed to the action command
 				if len(input.split(' ',1)) > 1:
-					action.kwargs.update( {'item': input.split(' ',1)[1]} )
+					action.kwargs.update( {'item': input.split(' ')[1]} )
+					
+					# this must mean an additional argument was passed, like a keycode to follow the usage of a keypad
+					if len(input.split(' ')) > 2:
+						action.kwargs.update( {'code': input.split(' ')[2]} )
+				
+				action.kwargs.update({'player': self.player})
 				
 				# set the instance action attribute for use in other class methods	
 				self.action = action
 				print("\n" + BgColors.NORMAL + "─"*70)
-				self.player.do_action(action, **action.kwargs)
-	
+				
+				#self.player.do_action(action, **action.kwargs)
+				
+					# Now we need to allow the Player class to take an Action and run the action`s internally-bound method. 
+				#def do_action(self, action, *args, **kwargs):
+				#action_method = getattr(self, action.method.__name__)
+				#if action_method:
+				#action_method(*args, **kwargs)
+				action.method(**action.kwargs)
+		
 				break
 		# if the action was not found in the available action list
 		if not action_found:
@@ -255,21 +254,15 @@ class App :
 		self.play()
 	
 	
-	def game_end(self):
-		if not self.player.is_alive():
-			print("\n{}You died...{}".format(BgColors.FAIL, BgColors.ENDC))
-	
-	
 	def print_intro(self):
 		print( """
- ______   ________   ______   _______     ___   _____  ____  _____       _       
-|_   _ `.|_   __  |.' ____ \ |_   __ \  .'   `.|_   _||_   \|_   _|     / \      
-  | | `. \ | |_ \_|| (___ \_|  | |__) |/  .-.  \ | |    |   \ | |      / _ \     
-  | |  | | |  _| _  _.____`.   |  ___/ | |   | | | |    | |\ \| |     / ___ \    
- _| |_.' /_| |__/ || \____) | _| |_    \  `-'  /_| |_  _| |_\   |_  _/ /   \ \_  
-|______.'|________| \______.'|_____|    `.___.'|_____||_____|\____||____| |____| 
-
-Copyright (C) 2015  Corey Farmer
+ _____ _            _____                              ____            _                  _ 
+|_   _| |__   ___  | ____|   _ _ __ ___  _ __   __ _  |  _ \ _ __ ___ | |_ ___   ___ ___ | |
+  | | | '_ \ / _ \ |  _|| | | | '__/ _ \| '_ \ / _` | | |_) | '__/ _ \| __/ _ \ / __/ _ \| |
+  | | | | | |  __/ | |__| |_| | | | (_) | |_) | (_| | |  __/| | | (_) | || (_) | (_| (_) | |
+  |_| |_| |_|\___| |_____\__,_|_|  \___/| .__/ \__,_| |_|   |_|  \___/ \__\___/ \___\___/|_|
+                                        |_|                                                 
+{}Copyright (C) 2015  Corey Farmer
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -284,12 +277,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>     
 
-
-
-Type 'help' to view a full list of available actions and ways to 
-interact within the game.                                                                           
-
-""" )
+Type '?' to view a full list of available actions and ways to 
+interact within the game.
+""".format(BgColors.CADETBLUE) )
 
 
 class Environment:

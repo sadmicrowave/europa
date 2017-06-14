@@ -5,6 +5,7 @@ from modules import items
 class Armor(items.Lootable):	
 	def __init__(self, name, classtype, description, cost, block, hp, level):
 		self.hp = hp
+		self.orig_hp = hp
 		self.level = level
 		self.block = block
 		self.classtype = classtype
@@ -27,7 +28,7 @@ class Shield(Armor):
 		super().__init__(name, classtype, description, cost, block, hp, level)
 
 # ------------------------------------------------------------------------------------------------------------------------------- #
-class Gauntlets(Armor):
+class Gloves(Armor):
 	def __init__(self, name, classtype, description, cost, block, hp, level):
 		super().__init__(name, classtype, description, cost, block, hp, level)
 

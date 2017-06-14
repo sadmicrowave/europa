@@ -6,6 +6,7 @@ class Enemy:
 		self.name 		 = name
 		self.description = description
 		self.hp 		 = hp
+		self.orig_hp	 = hp
 		self.damage 	 = damage
 		self.classtype	 = classtype
 		self.dead_message  = dead_message

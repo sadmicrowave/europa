@@ -27,12 +27,28 @@ from modules import repair
 
 class World:
 	
+	world_file = 'res/world.xlsx'
+	start_point = (0,0)
+	
 	def __init__(self):
 		self._world = {}
 		self._objects = {}
-		self.world_file = 'res/world.xlsx'
-		self.start_point = (0,0)
-
+		
+		self.load_armor()
+		self.load_weapons()
+		self.load_serums()
+		self.load_items()
+		self.load_notes()
+		self.load_barrier_items()
+		self.load_enemies()
+		self.load_merchants()
+		self.load_repair()
+		self.load_money()
+		self.load_containers()
+		self.load_wallet()
+		self.load_tiles()
+		
+		
 	def load_tiles(self):
 		"""Parses a file that describes the world space into the _world object"""
 		_rooms = self.construct_room()
@@ -271,11 +287,11 @@ class World:
 				# create the object class dynamically, utilizing __constructor__ for __init__ method
 				#item = type(item_name, (eval("{}.{}".format(name,row[1].value)),), {'__init__':__constructor__})
 				usable_items = []
-				if row[3].value:
+				if row[4].value:
 					# remove all whitespace in string
-					objects = re.sub(r'\s+', '', row[3].value).split(',')
+					objects = re.sub(r'\s+', '', row[4].value).split(',')
 					# iterate over the items in the room
-					for item in objects:
+					for item in objects:				
 						# if the item is an actual world object that has been created
 						if item in self._objects:
 							# add the item object to the room_items array to pass to the creation of the room tile
@@ -287,7 +303,8 @@ class World:
 				#item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
 				## add new object to the global _objects object to be used throughout the world
 				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value)	
-				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value)' % ('items', row[1].value) )
+				#self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value)' % ('items', row[1].value) )
+				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, usable_items, row[5].value)' % ('items', row[1].value) )
 	
 	
 	def load_merchants(self,name='merchants'):
@@ -482,19 +499,20 @@ class World:
 		for index,row in enumerate( sheet.iter_rows() ):
 			# skip the header row in the excel sheet
 			if index > 0: 
-				## create a name for the class object name
-				item_name = row[0].value.replace(' ','') #+ str(row[3].value)
-				## define an __init__ constructor method to be used when dynamically creating the object class
-				#def __constructor__(self, n, cl, d, nar, s, v):
-				#	# initialize super of class type
-				#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, narrative=nar, skill=s, value=v)
-							
-				## create the object class dynamically, utilizing __constructor__ for __init__ method
-				#item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
-				## add new object to the global _objects object to be used throughout the world
-				#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
-				self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)' % ('items',row[1].value) )
-				
+				if row[0].value:
+					## create a name for the class object name
+					item_name = row[0].value.replace(' ','') #+ str(row[3].value)
+					## define an __init__ constructor method to be used when dynamically creating the object class
+					#def __constructor__(self, n, cl, d, nar, s, v):
+					#	# initialize super of class type
+					#	super(self.__class__, self).__init__(name=n, classtype=cl, description=d, narrative=nar, skill=s, value=v)
+								
+					## create the object class dynamically, utilizing __constructor__ for __init__ method
+					#item = type(item_name, (eval("{}.{}".format('items',row[1].value)),), {'__init__':__constructor__})
+					## add new object to the global _objects object to be used throughout the world
+					#self._objects[ item_name ] = item(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)
+					self._objects[ item_name ] = eval( '%s.%s(row[0].value, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value)' % ('items',row[1].value) )
+					
 	
 	
 	def load_wallet(self):
@@ -508,25 +526,7 @@ class World:
 
 
 if __name__ == '__main__':
-
-	world = World()
-	world.load_armor()
-	world.load_weapons()
-	world.load_serums()
-	world.load_items()
-	world.load_notes()
-	world.load_barrier_items()
-	world.load_enemies()
-	world.load_merchants()
-	world.load_repair()
-	world.load_money()
-	world.load_containers()
-	world.load_wallet()
-	world.load_tiles()
-	
-	print( dir(world._world[(2,0)]), world._world[(2,0)].__dict__ )
-	#print( world._world[(1,0)].__dict__['objects'][0].name, world._world[(1,0)].__dict__['objects'][0].name == 'Torch' )
-	
+	world = World()	
 	
 	
 	
