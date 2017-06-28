@@ -41,13 +41,18 @@ if [ ! $(which python3) ]; then
 	# Install homebrew for easy installation of python 3 if homebrew does not exist
 	if [ ! $(which brew) ]; then
 		if $VERBOSE; then echo -e '\033[0;33m[++] Installing homebrew packages and drivers...\t\033[0m'; fi
-		ruby -e "$(curl -fsSkL raw.github.com/mxcl/homebrew/go)"
+		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		
-		# update homebrew installation and paths
-		brew update
+		if [ $(which brew) ]; then
+			# update homebrew installation and paths
+			brew update
+		else
+			if $VERBOSE; then echo -e '\033[0;31m[++] Python3 installation failed!\t\033[0m'; fi
+			exit
+		fi
 		
 		if $VERBOSE; then echo -e '\033[0;33m[++] Installing homebrew python3 package...\t\033[0m'; fi
-		# install python tree
+		# install python tree, this will also install pip3 if done correctly
 		brew install python3
 		
 		
@@ -58,18 +63,27 @@ if [ ! $(which python3) ]; then
 		else 
 			if $VERBOSE; then echo -e '\033[0;31m[++] Python3 installation failed!\t\033[0m'; fi
 		fi
-		
-		if $VERBOSE; then echo -e '\033[0;33m[++] Installing python3 modules for program compilation...\t\033[0m'; fi
-		pip3 install jsonpickle openpyxl cx_Freeze
-		
-		
 	fi
 	
 else
-
 	if $VERBOSE; then echo -e '\033[0;33m[+] Python3 already installed...\t\033[0m'; fi
-	
 fi
+
+
+if [ ! $(which pip3) ]; then
+	if $VERBOSE; then echo -e '\033[0;33m[++] Installing python3 package manager PIP...\t\033[0m'; fi
+	curl https://bootstrap.pypa.io/get-pip.py | python3
+
+fi
+
+if [ ! $(which pip3) ]; then
+	if $VERBOSE; then echo -e '\033[0;31m[++] Python3 package manager PIP installation failed!\t\033[0m'; fi
+	exit
+fi
+
+if $VERBOSE; then echo -e '\033[0;33m[++] Installing python3 modules for program compilation...\t\033[0m'; fi
+pip3 install jsonpickle openpyxl cx_Freeze
+
 
 
 # copy Tcl library framework from Mac OS X installed location to location which cx_Freeze requires it

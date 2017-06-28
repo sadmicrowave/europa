@@ -11,7 +11,7 @@
 # If everything works well you should find a subdirectory in the build
 # subdirectory that contains the files needed to run the application
 
-application_title = "Dispoina Adventure Game" #what you want to application to be called
+application_title = "game" #what you want to application to be called
 main_python_file = "game.py" #the name of the python file you use to run the program
 
 import sys
@@ -28,9 +28,8 @@ includes = []
 setup(
         name = application_title,
         version = "0.1",
-        description = "Text Based Adventure Game",
+        description = "The Europa Protocol - Adventure Game",
         options = {"build_exe" : {"includes" : includes }},
         #executables = [Executable(main_python_file, base = base)]
-        executables = [Executable(main_python_file)]
-
+        executables = [Executable(main_python_file, base=base)]
     )
