@@ -62,7 +62,9 @@ class aUse(object):
 				
 				# check if the used item class matches the desired class of the usable item class specified in the room item details
 				# this is for items within the room that have an interaction item, like Gold Chest needing a Key
-				elif list(filter(None.__ne__, player.room.interaction_item)) and item.__class__ == player.room.interaction_item[0].__class__ and item.name == player.room.interaction_item[0].name:
+				#elif list(filter(None.__ne__, player.room.interaction_item)) and item.__class__ == player.room.interaction_item[0].__class__ and item.name == player.room.interaction_item[0].name:
+				elif list(filter(None.__ne__, player.room.interaction_item)) and item.__class__ in [x.__class__ for x in player.room.interaction_item] and item.name in [x.name for x in player.room.interaction_item]:
+
 					# if it matches, then move the barrier item
 					player.room.get_items()[0].unblocked = True
 					# set the room status to not blocked, since we just moved the object
@@ -72,7 +74,9 @@ class aUse(object):
 
 				# check if the used item class matches the desired class of the usable item class specified in the room item details 
 				# this is for rooms with barrier items that have an interaction item, like a room with rock pile as movable
-				elif room_item and hasattr(room_item, 'interaction_item') and list(filter(None.__ne__, room_item.interaction_item)) and item.__class__ == room_item.interaction_item[0].__class__ and item.name == room_item.interaction_item[0].name :				
+				#elif room_item and hasattr(room_item, 'interaction_item') and list(filter(None.__ne__, room_item.interaction_item)) and item.__class__ == room_item.interaction_item[0].__class__ and item.name == room_item.interaction_item[0].name :				
+				elif room_item and hasattr(room_item, 'interaction_item') and list(filter(None.__ne__, room_item.interaction_item)) and item.__class__ in [x.__class__ for x in room_item.interaction_item] and item.name in [x.name for x in room_item.interaction_item] :				
+
 				#elif room_item and hasattr(room_item, 'interaction_item') and item.classtype == room_item.interaction_item[0].classtype :
 					# set the item as moved
 					room_item.unblocked = True

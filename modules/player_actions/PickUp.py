@@ -38,7 +38,9 @@ class aPickUp (object):
 		elif list(filter(None.__ne__, item)):
 			# set the correct item variable for interactions
 			item = item[0] # if not isinstance(item, list) else item[0]
-			
+			if isinstance(item, items.Readable):
+				print( textwrap.fill("{}You can't pickup a readable item. Use the [read] command to view the contents of this item.{}".format(BgColors.FAIL, BgColors.ENDC),70) )
+				return
 			if isinstance(item, items.Backpack) :
 				if item.level < player.backpack.level :
 					print("{}Your current backpack size is larger than this one.  Don't downsize.{}".format(BgColors.WARNING, BgColors.ENDC))
@@ -48,12 +50,8 @@ class aPickUp (object):
 			# ensure that we have enough room in our backpack before we can pick up the item
 			if player.get_inventory_size()+1 > player.backpack.level:
 				# if the backpack does not have enough room, then provide error message back
-				print("""
-	{}You don't have enough room in your backpack items.  
-	Find a larger backpack or drop items from your inventory.{}"""
-	.format(BgColors.FAIL, BgColors.ENDC))
+				print( textwrap.fill("{}You don't have enough room in your backpack items. Find a larger backpack or drop items from your inventory.{}".format(BgColors.FAIL, BgColors.ENDC),70) )
 				return
-
 			# remove the item from the room's list of items
 			player.room.remove_item(item)
 			# reindex the room index list
