@@ -40,8 +40,8 @@ class App :
 		# Initialize the tkinter object
 		self.root = Tk()
 		# set window opacity
-		self.root.attributes('-alpha', 0.85)
-		self.root.geometry("900x800")
+		self.root.attributes('-alpha', 0.90)
+		self.root.geometry("850x800")
 		# set the application title
 		self.root.title("The Europa Protocol - Adventure Game")
 		
@@ -274,9 +274,6 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>     
-
 Type '?' to view a full list of available actions and ways to 
 interact within the game.
 """.format(BgColors.CADETBLUE) )
@@ -293,7 +290,7 @@ class Environment:
 			wb = load_workbook(self.map_file)
 			sh = wb.get_sheet_by_name(self.map_output)
 			
-			with open("res/%s" % self.map_output, 'w') as f:
+			with open("res/%s" % self.map_output, 'w', newline='') as f:
 				c = csv.writer(f, delimiter='\t')
 				for r in sh.rows:
 					c.writerow([cell.value for cell in r])
