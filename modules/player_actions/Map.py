@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 
 import textwrap
-from modules import tiles
+#from modules import tiles
 from modules.bgcolors import BgColors
 
 class aMap(object):
@@ -25,12 +25,12 @@ class aMap(object):
 		tot = vis = enemy_tot = enemy_vis = 0
 		# print the grid based on current coordinate view
 		for key,tile in player.world.__dict__.items() :
-			if isinstance(tile,tiles.MapTile) :
+			if isinstance(tile,kwargs['tiles'].MapTile) :
 				tot += 1
-				enemy_tot += 1 if isinstance(tile, tiles.EnemyRoom) else 0
+				enemy_tot += 1 if isinstance(tile, kwargs['tiles'].EnemyRoom) else 0
 				if tile.is_visited() :
 					vis += 1
-					enemy_vis += 1 if isinstance(tile, tiles.EnemyRoom) else 0
+					enemy_vis += 1 if isinstance(tile, kwargs['tiles'].EnemyRoom) else 0
 					
 					# ensure the x,y axis position is within our range (set above) from center-tile (current location)
 					if ( abs( tile.x - player.room.x ) <= normalized_grid_origin[0] ) and ( abs( tile.y - player.room.y ) <= normalized_grid_origin[1] ):

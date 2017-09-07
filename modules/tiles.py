@@ -10,7 +10,7 @@ from modules import actions
 from modules import items
 from modules import armor
 from modules import weapons
-from modules import world
+#from modules import world
 from modules import enemies
 from modules.helpers import health
 

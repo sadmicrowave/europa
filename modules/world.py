@@ -27,7 +27,7 @@ from modules import repair
 
 class World:
 	
-	world_file = 'res/world.xlsx'
+	world_file = 'world.xlsx'
 	start_point = (0,0)
 	
 	def __init__(self):
@@ -52,7 +52,7 @@ class World:
 	def load_tiles(self):
 		"""Parses a file that describes the world space into the _world object"""
 		_rooms = self.construct_room()
-		with open('res/map.txt', 'r') as f:
+		with open('map.txt', 'r') as f:
 			rows = f.readlines()
 		x_max = len(rows[0].split('\t')) # Assumes all rows contain the same number of tabs
     

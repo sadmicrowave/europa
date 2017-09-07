@@ -16,6 +16,7 @@ from modules import merchants
 from modules import repair
 from modules.helpers.health import Health
 from modules.helpers.state import State
+from modules.helpers.help import aHelp
 
 from tkinter import *
 from openpyxl import load_workbook
@@ -41,7 +42,7 @@ class App :
 		self.root = Tk()
 		# set window opacity
 		self.root.attributes('-alpha', 0.90)
-		self.root.geometry("850x800")
+		self.root.geometry("950x650")
 		# set the application title
 		self.root.title("The Europa Protocol - Adventure Game")
 		
@@ -201,7 +202,11 @@ class App :
 
 			# display the mini help options for available options (not extended help view)
 			#if not isinstance(self.action, actions.HiddenAction):
-			self.player.help()
+			#self.player.help()
+			kwargs = {'actions': actions
+				,'available_actions': self.player.room.available_actions(self.player)
+								  }
+			aHelp.help(**kwargs)
 										
 			# prompt the user to input an action
 			#print(BgColors.HEADER + '\n\nAction: ' + BgColors.ENDC, end='')
@@ -227,7 +232,12 @@ class App :
 					if len(input.split(' ')) > 2:
 						action.kwargs.update( {'code': input.split(' ')[2]} )
 				
-				action.kwargs.update({'player': self.player})
+				action.kwargs.update({ 'player': self.player
+                                                      ,'actions': actions
+                                                      ,'actions_list': actions.Action.get_actions()
+                                                      ,'available_actions': self.player.room.available_actions(self.player)
+                                                      ,'tiles': tiles
+                                                       })
 				
 				# set the instance action attribute for use in other class methods	
 				self.action = action
@@ -281,7 +291,7 @@ interact within the game.
 
 class Environment:
 	def __init__(self):
-		self.map_file = 'res/map.xlsx'
+		self.map_file = 'map.xlsx'
 		self.map_output = 'map.txt'
 	
 	# create the tab delimited file from the map xlsx document, if found
@@ -290,7 +300,7 @@ class Environment:
 			wb = load_workbook(self.map_file)
 			sh = wb.get_sheet_by_name(self.map_output)
 			
-			with open("res/%s" % self.map_output, 'w', newline='') as f:
+			with open(self.map_output, 'w', newline='') as f:
 				c = csv.writer(f, delimiter='\t')
 				for r in sh.rows:
 					c.writerow([cell.value for cell in r])

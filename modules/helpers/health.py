@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
 
+from modules.bgcolors import BgColors
 
 class Health(object):
 	
@@ -20,3 +21,7 @@ class Health(object):
 	def get_hp(cls, entity):
 		#print("{}Current HP Level: {}{}".format(BgColors.OKGREEN, entity.hp, BgColors.ENDC))
 		return entity.hp
+
+	@classmethod
+	def check_hp(cls, **kwargs):
+		print("{}Current HP Level: {}{}".format(BgColors.OKGREEN, cls.get_hp(kwargs['player']), BgColors.ENDC))

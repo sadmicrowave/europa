@@ -3,11 +3,13 @@
 import sys, textwrap
 
 from modules.bgcolors import BgColors
-from modules import actions
+#from modules import actions
 from modules import items
 from modules import armor
 from modules import weapons
 from modules.helpers.health import Health
+#from modules.helpers.skills import aSkills
+#from modules.helpers.stats import Stats
 
 
 class Player:
@@ -67,26 +69,26 @@ class Player:
 
 
 	
-	def help(self):
-		"""print the available actions"""		
-		print( BgColors.HEADER + "\nChoose an action:" + BgColors.ENDC )
-		available_actions = self.room.available_actions(self)
-		#actions = __import__('actions')
-		for action in available_actions:
-			if not isinstance(action, getattr(actions, 'ItemAction')) and not isinstance(action, getattr(actions, 'HiddenAction')):
-				print("{}{}{}".format(BgColors.CADETBLUE, action, BgColors.ENDC))
+	#def help(self):
+	#	"""print the available actions"""		
+	#	print( BgColors.HEADER + "\nChoose an action:" + BgColors.ENDC )
+	#	available_actions = self.room.available_actions(self)
+	#	#actions = __import__('actions')
+	#	for action in available_actions:
+	#		if not isinstance(action, getattr(actions, 'ItemAction')) and not isinstance(action, getattr(actions, 'HiddenAction')):
+	#			print("{}{}{}".format(BgColors.CADETBLUE, action, BgColors.ENDC))
 
-	@classmethod
-	def extended_help(cls, **kwargs):
-		player = kwargs['player']
-		
-		#available_actions = player.room.available_actions(player)
-		available_actions = actions.Action.get_actions()
-		#actions = __import__('actions')
-		print(textwrap.fill("You can use the following commands within the game to interact with the world around you.  Not all actions will be available for use at all times.  The available actions are contextual and will depend on your current status and state in the game, including where you are, what items you possess, and what objects are around you.",70))
-		print("")
-		for action in available_actions:
-			print("{}{}{}".format(BgColors.CADETBLUE, action, BgColors.ENDC))
+	#@classmethod
+	#def extended_help(cls, **kwargs):
+	#	player = kwargs['player']
+	#	
+	#	#available_actions = player.room.available_actions(player)
+	#	available_actions = actions.Action.get_actions()
+	#	#actions = __import__('actions')
+	#	print(textwrap.fill("You can use the following commands within the game to interact with the world around you.  Not all actions will be available for use at all times.  The available actions are contextual and will depend on your current status and state in the game, including where you are, what items you possess, and what objects are around you.",70))
+	#	print("")
+	#	for action in available_actions:
+	#		print("{}{}{}".format(BgColors.CADETBLUE, action, BgColors.ENDC))
 
 
 	def select_item(self, ref, container=None):
@@ -117,42 +119,42 @@ class Player:
 		return item
 		
 	
-	@classmethod
-	def check_hp(cls, **kwargs):
-		print("{}Current HP Level: {}{}".format(BgColors.OKGREEN, Health.get_hp(kwargs['player']), BgColors.ENDC))
+	#@classmethod
+	#def check_hp(cls, **kwargs):
+	#	print("{}Current HP Level: {}{}".format(BgColors.OKGREEN, Health.get_hp(kwargs['player']), BgColors.ENDC))
 
 
-	@classmethod
-	def check_skills(cls, **kwargs):
-		print("{}Skills:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
-		for k, v in kwargs['player'].skills.items():
-			print("{}{:<10}:{}% - {}{}".format(BgColors.OKGREEN, v['name'], v['value'], v['desc'], BgColors.ENDC))
+	#@classmethod
+	#def check_skills(cls, **kwargs):
+	#	print("{}Skills:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
+	#	for k, v in kwargs['player'].skills.items():
+	#		print("{}{:<10}:{}% - {}{}".format(BgColors.OKGREEN, v['name'], v['value'], v['desc'], BgColors.ENDC))
 	
-	@classmethod
-	def check_stats(cls, **kwargs):
-		player = kwargs['player']
-		print("{}Stats:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
-		# print the player health
-		cls.check_hp(**kwargs)
-		# compile total sum of armor defense from equipped armor
-		print("{}Current Armor Level: {}{}".format(BgColors.OKGREEN, sum([x.block for x in player.inventory if isinstance(x, armor.Armor) and x.is_equipped()]), BgColors.ENDC))
-		# compile total sum of weapon damage from equipped weapons
-		print("{}Current Damage Level: {}{}".format(BgColors.OKGREEN, sum([x.damage for x in player.inventory if isinstance(x, weapons.Weapon) and x.is_equipped()]), BgColors.ENDC))
-		
-		# print each item of armor that is equipped
-		if len([x for x in player.inventory if isinstance(x, armor.Armor)]) > 0:
-			print("\n{}Equipped Armor:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
-			[print(x) for x in player.inventory if isinstance(x, armor.Armor) and x.is_equipped()]
-		
-		# print each item of weapons that is equipped
-		if len([x for x in player.inventory if isinstance(x, weapons.Weapon)]) > 0:
-			print("\n{}Equipped Weapons:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
-			[print(x) for x in player.inventory if isinstance(x, weapons.Weapon) and x.is_equipped()]
-
-		print("")
-		# print the skills stats
-		cls.check_skills(**kwargs)
-		
+	#@classmethod
+	#def check_stats(cls, **kwargs):
+	#	player = kwargs['player']
+	#	print("{}Stats:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
+	#	# print the player health
+	#	cls.check_hp(**kwargs)
+	#	# compile total sum of armor defense from equipped armor
+	#	print("{}Current Armor Level: {}{}".format(BgColors.OKGREEN, sum([x.block for x in player.inventory if isinstance(x, armor.Armor) and x.is_equipped()]), BgColors.ENDC))
+	#	# compile total sum of weapon damage from equipped weapons
+	#	print("{}Current Damage Level: {}{}".format(BgColors.OKGREEN, sum([x.damage for x in player.inventory if isinstance(x, weapons.Weapon) and x.is_equipped()]), BgColors.ENDC))
+	#	
+	#	# print each item of armor that is equipped
+	#	if len([x for x in player.inventory if isinstance(x, armor.Armor)]) > 0:
+	#		print("\n{}Equipped Armor:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
+	#		[print(x) for x in player.inventory if isinstance(x, armor.Armor) and x.is_equipped()]
+	#	
+	#	# print each item of weapons that is equipped
+	#	if len([x for x in player.inventory if isinstance(x, weapons.Weapon)]) > 0:
+	#		print("\n{}Equipped Weapons:{}".format(BgColors.CADETBLUE, BgColors.ENDC))
+	#		[print(x) for x in player.inventory if isinstance(x, weapons.Weapon) and x.is_equipped()]
+        #
+	#	print("")
+	#	# print the skills stats
+	#	#cls.check_skills(**kwargs)
+	#	Skills.check_skills(**kwargs)
 	
 	def get_inventory_size(self):
 		# get the full size of your inventory, excluding items that are equipped since those are being worn and not in your backpack

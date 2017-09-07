@@ -2,6 +2,10 @@
 
 from modules.player import Player
 from modules.helpers.state import State
+from modules.helpers.skills import aSkills
+from modules.helpers.stats import Stats
+from modules.helpers.help import aHelp
+from modules.helpers.health import Health
 
 from modules.player_actions.Move   import aMove
 from modules.player_actions.PickUp import aPickUp
@@ -19,6 +23,7 @@ from modules.player_actions.Map import aMap
 from modules.player_actions.Loot import aLoot
 from modules.player_actions.Search import aSearch
 from modules.player_actions.Journal import aJournal
+
 
 
 # We now have behavior defined for certain actions. But within the game, 
@@ -125,15 +130,23 @@ class Journal(HiddenAction):
 
 class Help(Action):
 	def __init__(self, **kwargs):
-		super().__init__(method=Player.extended_help, name='Help menu', hotkey=['?'], **kwargs)
+		#super().__init__(method=Player.extended_help, name='Help menu', hotkey=['?'], **kwargs)
+                super().__init__(method=aHelp.extended_help, name='Help menu', hotkey=['?'], **kwargs)
 
 class CheckHp(HiddenAction):
 	def __init__(self, **kwargs):
-		super().__init__(method=Player.check_hp, name='Check HP', hotkey=['hp'], **kwargs)
+		#super().__init__(method=Player.check_hp, name='Check HP', hotkey=['hp'], **kwargs)
+                super().__init__(method=Health.check_hp, name='Check HP', hotkey=['hp'], **kwargs)
 
 class CheckStats(HiddenAction):
 	def __init__(self, **kwargs):
-		super().__init__(method=Player.check_stats, name='Check stats', hotkey=['cs','stats'])
+		#super().__init__(method=Player.check_stats, name='Check stats', hotkey=['cs','stats'])
+                super().__init__(method=Stats.check_stats, name='Check stats', hotkey=['cs','stats'], **kwargs)
+
+class Skills(HiddenAction):
+	def __init__(self, **kwargs):
+		#super().__init__(method=Player.check_skills, name='Skills', hotkey=['sk','skills'], **kwargs)
+                super().__init__(method=aSkills.check_skills, name='Skills', hotkey=['sk','skills'], **kwargs)
 
 class Map(HiddenAction):
 	def __init__(self, **kwargs):
@@ -225,10 +238,6 @@ class Loot(Action):
 		#super().__init__(method=Player.loot, name='Loot', hotkey=['l','loot'], enemy=enemy)
 		super().__init__(method=aLoot.__act__, name='Loot', hotkey=['l','loot'], enemy=enemy, **kwargs)
 
-class Skills(HiddenAction):
-	def __init__(self, **kwargs):
-		super().__init__(method=Player.check_skills, name='Skills', hotkey=['sk','skills'], **kwargs)
-		
 class Save(HiddenAction):
 	def __init__(self, **kwargs):
 		super().__init__(method=State.save, name='Save Game', hotkey=['sa','save'], **kwargs)

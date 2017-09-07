@@ -3,7 +3,7 @@
 import textwrap
 
 from modules.bgcolors import BgColors
-from modules import actions
+#from modules import actions
 from modules import items
 from modules import armor
 from modules import weapons
@@ -18,9 +18,9 @@ class aInventory(object):
 		
 		print("{}Other available actions:".format(BgColors.HEADER))
 		print("{}Usage: action paired with either the item index number or the item full name.\n".format(BgColors.NORMAL))
-		available_actions = player.room.available_actions(player)
+		available_actions = kwargs['available_actions'] #player.room.available_actions(player)
 		for action in available_actions:
-			if isinstance(action, getattr(actions, 'ItemAction')):
+			if isinstance(action, getattr(kwargs['actions'], 'ItemAction')):
 				print("{}{}{}".format(BgColors.CADETBLUE, action, BgColors.ENDC))
 		i = 1
 		
