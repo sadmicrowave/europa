@@ -133,7 +133,7 @@ class App :
 	
 	def load_game_state(self):
 		# check if there is a game save file with a previously saved state
-		if os.path.exists('res/saved/gsave.pkl') :
+		if os.path.exists('gsave.pkl') :
 			# prompt the user to answer if they want to load from a saved state
 			#action_input = input( BgColors.HEADER + 'Load Saved Game? [y/n]: ' + BgColors.ENDC).lower()
 			print( BgColors.HEADER + 'Load Saved Game? [y/n]: ' + BgColors.ENDC )
@@ -149,7 +149,7 @@ class App :
 		# if the answer is yes, they want to load from the previous save, then attempt to load
 		if input.lower() == 'y' :
 			# open the save state file
-			with open('res/saved/gsave.pkl', 'r') as output:
+			with open('gsave.pkl', 'r') as output:
 				# assign player object as the pickled object, decoded
 				self.player = jsonpickle.decode(output.read())
 				# assign the world object as the player.world property

@@ -27,7 +27,7 @@ class State(object):
 		"""Save the current state of the game."""
 		try :
 			# open the file to use for saving the game state, as writable
-			with open('res/saved/gsave.pkl', 'w') as output:
+			with open('gsave.pkl', 'w') as output:
 				# write the output of jsonpickling the Player object to the file
 				output.write( jsonpickle.encode(kwargs['player']) )
 			# print successful game save message
