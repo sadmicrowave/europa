@@ -42,7 +42,7 @@ class App :
 		self.root = Tk()
 		# set window opacity
 		self.root.attributes('-alpha', 0.90)
-		self.root.geometry("950x650")
+		self.root.geometry("900x650+0+0")
 		# set the application title
 		self.root.title("The Europa Protocol - Adventure Game")
 		
