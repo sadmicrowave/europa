@@ -20,10 +20,10 @@ from distutils.core import setup
 
 setup(
     windows=[{ 'script':'game.py'
-              ,'icon_resources': [(1, "res/game_icon.ico")]
+              ,'icon_resources': [(1, 'game_icon.ico')]
               ,'dest_base' : 'The Europa Protocol'
             }]
-    ,data_files = [('', ['world.xlsx', 'map.xlsx', 'map.txt'])]
+    ,data_files = [('', ['world.xlsx', 'map.xlsx', 'map.txt', 'game_icon.ico'])]
       
 
       )
