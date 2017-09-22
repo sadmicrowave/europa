@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-import sys, re, os, textwrap, jsonpickle, csv, time
+import sys, re, os, textwrap, jsonpickle, csv, traceback
 
 from modules.bgcolors import BgColors
 from modules.world import World
@@ -82,7 +82,7 @@ class App :
 	def check_state(self):
 		########### CHECK IF THERE GAME NEEDS UPDATING ##########
 		if Connection.is_connected():
-			up_to_date, self.download_url = Check.is_up_to_date()
+			up_to_date, self.new_version, self.download_url = Check.is_up_to_date()
 			if not up_to_date :
 				# this means the game version is outdated, we need to update it
 				print( BgColors.HEADER + 'An update is available, would you like to download? [y/n]: ' + BgColors.ENDC )
@@ -98,23 +98,12 @@ class App :
 		if input.lower() == 'y' :
 			try: 
 				# fire the method to get the game updates from the remote server
-				Update.get_updates(self.root, self.download_url)
-				# copy the game contents from the newly extracted temp dir to the installation dir
-				Update.copy_contents(self.root)
-				# remove the temp dir from the system to prevent unnecessary harddrive usage
-				Update.destroy_env(self.root)
-				print( BgColors.OKGREEN + "Update successful." + BgColors.ENDC)
-				print( "Restarting game..." )
-				self.root.update()
-				# wait long enough for the user to read all the log entries from the update
-				time.sleep(3)
-				# reload the game so the new version is being used
-				Update.reload_game()
-				# exit current version
-				sys.exit()
+				Update.get_updates(self.new_version, self.root, self.download_url)
 				
 			except Exception as e :
-				print( BgColors.FAIL + "Updated failed, check service logs for details." + BgColors.ENDC )
+				print( BgColors.FAIL + "\nUpdated failed, check service logs for details." + BgColors.ENDC )
+				print ( e )
+				print( traceback.format_exc())
 				self.root.update()
 				
 		self.begin_intro()

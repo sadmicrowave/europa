@@ -22,7 +22,6 @@ setup(
               ,'icon_resources': [(1, 'game_icon.ico')]
               ,'dest_base' : 'The Europa Protocol'
             }]
-    ,data_files = [('', ['world.xlsx', 'map.xlsx', 'map.txt', 'VERSION.txt', 'game_icon.ico'])]
-      
-
+    ,data_files = [('', ['world.xlsx', 'map.xlsx', 'map.txt', 'VERSION.txt', 'game_icon.ico', 'cacert.pem'])]
+	,zipfile = None
       )

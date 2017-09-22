@@ -28,6 +28,7 @@ from modules import repair
 class World:
 	
 	world_file = 'world.xlsx'
+	
 	start_point = (0,0)
 	
 	def __init__(self):
