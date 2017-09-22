@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-import sys, re, inspect, os, textwrap, shutil, jsonpickle, csv
+import sys, re, os, textwrap, jsonpickle, csv, time
 
 from modules.bgcolors import BgColors
 from modules.world import World
@@ -15,8 +15,9 @@ from modules import enemies
 from modules import merchants
 from modules import repair
 from modules.helpers.health import Health
-from modules.helpers.state import State
+from modules.helpers.state import State, Connection
 from modules.helpers.help import aHelp
+from modules.helpers.release import Check, Update
 
 from tkinter import *
 from openpyxl import load_workbook
@@ -35,7 +36,7 @@ class App :
 
 		self.next_method 	= None
 		self.action 		= None
-		self.tag			= None
+		self.tag		= None
 
 		########### SETUP THE GAME WINDOW FRAME #############
 		# Initialize the tkinter object
@@ -73,11 +74,57 @@ class App :
 	
 		# initialize all the Text widget tag configurations to be used to change colors later
 		BgColors(self.mainframe)
+
+        # check to see if there is an update available for the game data
+		self.check_state()
+
 		
+	def check_state(self):
+		########### CHECK IF THERE GAME NEEDS UPDATING ##########
+		if Connection.is_connected():
+			up_to_date, self.download_url = Check.is_up_to_date()
+			if not up_to_date :
+				# this means the game version is outdated, we need to update it
+				print( BgColors.HEADER + 'An update is available, would you like to download? [y/n]: ' + BgColors.ENDC )
+				self.next_method = self.do_update_game
+			else :
+				self.begin_intro()
+		else :
+			self.begin_intro()
+                                                         
+    
+	def do_update_game(self, input):
+        # if the answer is yes, the user wants to update the game data
+		if input.lower() == 'y' :
+			try: 
+				# fire the method to get the game updates from the remote server
+				Update.get_updates(self.root, self.download_url)
+				# copy the game contents from the newly extracted temp dir to the installation dir
+				Update.copy_contents(self.root)
+				# remove the temp dir from the system to prevent unnecessary harddrive usage
+				Update.destroy_env(self.root)
+				print( BgColors.OKGREEN + "Update successful." + BgColors.ENDC)
+				print( "Restarting game..." )
+				self.root.update()
+				# wait long enough for the user to read all the log entries from the update
+				time.sleep(3)
+				# reload the game so the new version is being used
+				Update.reload_game()
+				# exit current version
+				sys.exit()
+				
+			except Exception as e :
+				print( BgColors.FAIL + "Updated failed, check service logs for details." + BgColors.ENDC )
+				self.root.update()
+				
+		self.begin_intro()
+		
+		
+	def begin_intro(self):
 		self.print_intro()
 		# attempt to load previous game state, or create new game state if no previous is found
 		self.load_game_state()
-	
+					
 	
 	def inputText(self, event, player=None):
 		if (self.player and Health.is_alive(self.player)) or not player:
@@ -88,7 +135,6 @@ class App :
 			# send the contents of the input box to the print function
 			print("\n" + BgColors.NORMAL + "Your Action: " + i )
 			# execute the next method in line, set by previous call
-			#eval('self.%s(%s)' % (self.next_method, i))
 			self.next_method(i)
 	
 	
@@ -315,7 +361,6 @@ if __name__ == "__main__":
 
 		a = App()
 		a.root.mainloop()
-		
 		
 	except Exception:
 		raise
