@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-import sys, jsonpickle
+import sys, jsonpickle, socket
 from modules.bgcolors import BgColors
 from modules.helpers.health import Health
 
@@ -42,3 +42,33 @@ class State(object):
 		"""Quit the current game, and save."""
 		cls.save(**kwargs)
 		sys.exit()
+
+
+class Connection(object):
+        #################################################################################################################################
+	# CHECK IF THE USER IS CONNECTED TO THE INTERNET, USED TO AUTO-UPDATE GAME FILES IF VERSION IS OUTDATED
+
+	@classmethod
+	def is_connected(cls):
+                """Is there a network connection present."""
+                remote_server = "www.google.com"
+                try:
+                        # see if we can resolve the host name -- tells us if there is a DNS listening
+                        host = socket.gethostbyname(remote_server)
+                        # connect to the host -- tells us if the host is actually reachable
+                        s = socket.create_connection((host,80),2)
+                        return True
+                except:
+                        pass
+                return False
+
+
+
+
+
+
+
+
+
+
+                
