@@ -17,7 +17,7 @@ from modules import repair
 from modules.helpers.health import Health
 from modules.helpers.state import State, Connection
 from modules.helpers.help import aHelp
-#from modules.helpers.release import Check, Update
+from modules.helpers.release import Check, Update
 
 from tkinter import *
 from openpyxl import load_workbook
