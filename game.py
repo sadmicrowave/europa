@@ -17,7 +17,7 @@ from modules import repair
 from modules.helpers.health import Health
 from modules.helpers.state import State, Connection
 from modules.helpers.help import aHelp
-from modules.helpers.release import Check, Update
+#from modules.helpers.release import Check, Update
 
 from tkinter import *
 from openpyxl import load_workbook
@@ -76,8 +76,9 @@ class App :
 		BgColors(self.mainframe)
 
         # check to see if there is an update available for the game data
-		self.check_state()
+		#self.check_state()
 
+		self.begin_intro()
 		
 	def check_state(self):
 		########### CHECK IF THERE GAME NEEDS UPDATING ##########
