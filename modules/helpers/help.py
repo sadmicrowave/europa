@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3
 
+import textwrap
 from modules.bgcolors import BgColors
 
 class aHelp(object):
